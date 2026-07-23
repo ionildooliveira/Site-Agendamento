@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ── Base Styling & Luxury Palette ────────────────────────────────────────── */
+:root {
+  --color-rose-primary: #D47FA6;
+  --color-rose-light: #F5D8E3;
+  --color-rose-bg: #FFF8FA;
+  --color-rose-dark: #6B4E5A;
+  --color-dark-mink: #4A323D;
+  --color-gold: #C9A96E;
+  --color-whatsapp: #25D366;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #FFF8FA;
+  color: #4A323D;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, .font-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF8FA;
+}
+::-webkit-scrollbar-thumb {
+  background: #D47FA6;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b86289;
+}
+
+/* ── Custom UI Components & Utilities ─────────────────────────────────────── */
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.925rem;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #D47FA6 0%, #E8A5C8 100%);
+  box-shadow: 0 4px 15px rgba(212, 127, 166, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(212, 127, 166, 0.45);
+  filter: brightness(1.05);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.925rem;
+  color: #D47FA6;
+  background: transparent;
+  border: 2px solid #D47FA6;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-outline:hover {
+  background: #D47FA6;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(212, 127, 166, 0.25);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #6B4E5A;
+  background: transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid rgba(245, 216, 227, 0.8);
+  text-decoration: none;
+}
+.btn-ghost:hover {
+  background: #FDF2F7;
+  color: #D47FA6;
+  border-color: #D47FA6;
+}
+
+/* Cards & Glassmorphism */
+.card {
+  background: #FFFFFF;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(245, 216, 227, 0.65);
+  box-shadow: 0 4px 20px rgba(74, 50, 61, 0.04);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(74, 50, 61, 0.09);
+  border-color: #D47FA6;
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 35px rgba(74, 50, 61, 0.07);
+}
+
+/* Form Inputs */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid #E8D4DD;
+  background: #FFFFFF;
+  color: #4A323D;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+.input:focus {
+  outline: none;
+  border-color: #D47FA6;
+  box-shadow: 0 0 0 4px rgba(212, 127, 166, 0.15);
+}
+
+/* Section Titles */
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #4A323D;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 2.75rem;
+  }
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: #6B4E5A;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* Gradients */
+.bg-gradient-rose-gold {
+  background: linear-gradient(135deg, #D47FA6 0%, #E8A5C8 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #6B4E5A 0%, #D47FA6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
