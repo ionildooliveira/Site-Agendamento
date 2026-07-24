@@ -5,6 +5,7 @@ const defaultSettings = {
   name: 'Studio Beauty',
   slogan: 'Elegância, cuidado & sofisticação para sua beleza',
   description: 'O Studio Beauty é um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta para cabelos, unhas e estética com profissionais altamente especializados.',
+  cep: '',
   address: 'Av. Paulista, 1500 - Bela Vista',
   cityState: 'São Paulo - SP',
   whatsapp: '5511999998888',

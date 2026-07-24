@@ -97,6 +97,29 @@ export default function AdminSettings() {
     }
   };
 
+  const handleCepBlur = async () => {
+    const cep = salonData.cep?.replace(/\D/g, '');
+    if (cep?.length === 8) {
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await res.json();
+        if (!data.erro) {
+          setSalonData(prev => ({
+            ...prev,
+            address: `${data.logradouro},  - ${data.bairro}`,
+            cityState: `${data.localidade} - ${data.uf}`
+          }));
+          toast.success('Endereço preenchido pelo CEP!');
+        } else {
+          toast.error('CEP não encontrado.');
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Erro ao buscar o CEP.');
+      }
+    }
+  };
+
   // Save Working Hours (Tab 2)
   const handleWorkingHourChange = (dayKey, field, value) => {
     setWorkingHours(prev => {
@@ -354,19 +377,20 @@ export default function AdminSettings() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Endereço</label>
+              <label className="block text-xs font-bold text-[#4A323D] mb-1">CEP</label>
               <input
                 type="text"
-                required
-                value={salonData.address}
-                onChange={(e) => setSalonData({ ...salonData, address: e.target.value })}
+                placeholder="Ex: 01310-200"
+                value={salonData.cep || ''}
+                onChange={(e) => setSalonData({ ...salonData, cep: e.target.value })}
+                onBlur={handleCepBlur}
                 className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
               />
             </div>
 
-            <div>
+            <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-[#4A323D] mb-1">Cidade - Estado</label>
               <input
                 type="text"
@@ -376,6 +400,17 @@ export default function AdminSettings() {
                 className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#4A323D] mb-1">Endereço</label>
+            <input
+              type="text"
+              required
+              value={salonData.address}
+              onChange={(e) => setSalonData({ ...salonData, address: e.target.value })}
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+            />
           </div>
 
           <div>
