@@ -53,7 +53,7 @@ export default function AdminServices() {
       setPrice(service.price.toString());
       setDuration(service.duration_minutes.toString());
       setCategory(service.category || '');
-      setActive(service.active);
+      setActive(service.active ? 1 : 0);
     } else {
       setEditingService(null);
       setName('');
@@ -161,7 +161,7 @@ export default function AdminServices() {
               </thead>
               <tbody className="text-sm">
                 {services.map((s) => (
-                  <tr key={s.id} className={`border-b border-rose-light/10 hover:bg-rose-light/5 ${s.active === 0 ? 'opacity-50' : ''}`}>
+                  <tr key={s.id} className={`border-b border-rose-light/10 hover:bg-rose-light/5 ${!s.active ? 'opacity-50' : ''}`}>
                     <td className="py-3">
                       <div>
                         <p className="font-bold text-gray-900">{s.name}</p>
@@ -174,8 +174,8 @@ export default function AdminServices() {
                     <td className="py-3 font-medium text-gray-700">{s.duration_minutes} min</td>
                     <td className="py-3 font-bold text-gray-900">R$ {s.price.toFixed(2)}</td>
                     <td className="py-3 text-center">
-                      <span className={`badge ${s.active === 1 ? 'badge-green' : 'badge-red'}`}>
-                        {s.active === 1 ? 'Ativo' : 'Inativo'}
+                      <span className={`badge ${s.active ? 'badge-green' : 'badge-red'}`}>
+                        {s.active ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
                     <td className="py-3 text-right">
@@ -187,7 +187,7 @@ export default function AdminServices() {
                         >
                           <FaEdit />
                         </button>
-                        {s.active === 1 && (
+                        {s.active && (
                           <button 
                             onClick={() => handleDelete(s.id)}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
