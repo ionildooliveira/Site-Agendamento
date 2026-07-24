@@ -56,7 +56,7 @@ export default function AdminProfessionals() {
         specs = [];
       }
       setSpecialtiesText(specs.join(', '));
-      setActive(pro.active);
+      setActive(pro.active ? 1 : 0);
     } else {
       setEditingPro(null);
       setName('');
@@ -163,7 +163,7 @@ export default function AdminProfessionals() {
               <div 
                 key={p.id} 
                 className={`card p-6 flex flex-col gap-4 border border-rose-light/10 relative ${
-                  p.active === 0 ? 'opacity-60 bg-gray-50/50' : ''
+                  !p.active ? 'opacity-60 bg-gray-50/50' : ''
                 }`}
               >
                 <div className="flex justify-between items-start">
@@ -182,8 +182,8 @@ export default function AdminProfessionals() {
                       <p className="text-xs text-rose-dark font-semibold">{p.role}</p>
                     </div>
                   </div>
-                  <span className={`badge ${p.active === 1 ? 'badge-green' : 'badge-red'}`}>
-                    {p.active === 1 ? 'Ativo' : 'Inativo'}
+                  <span className={`badge ${p.active ? 'badge-green' : 'badge-red'}`}>
+                    {p.active ? 'Ativo' : 'Inativo'}
                   </span>
                 </div>
 
@@ -209,7 +209,7 @@ export default function AdminProfessionals() {
                   >
                     <FaEdit /> Editar
                   </button>
-                  {p.active === 1 && (
+                  {p.active && (
                     <button 
                       onClick={() => handleDelete(p.id)}
                       className="text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-full flex items-center gap-1"
