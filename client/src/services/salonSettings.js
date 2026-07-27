@@ -12,7 +12,7 @@ const defaultSettings = {
   cityState: 'São Paulo - SP',
   whatsapp: '5511999998888',
   email: 'contato@studiobeauty.com.br',
-  workingHoursText: 'Seg a Sex: 09h às 19h | Sáb: 09h às 17h',
+  workingHoursText: 'Seg a Sexta: 09h às 19h | Sáb: 09h às 17h',
   heroImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80',
 };
 
@@ -71,7 +71,7 @@ export function generateWorkingHoursText(workingHours) {
     '2': 'Ter',
     '3': 'Qua',
     '4': 'Qui',
-    '5': 'Sex',
+    '5': 'Sexta',
     '6': 'Sáb',
     '0': 'Dom'
   };
