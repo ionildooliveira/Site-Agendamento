@@ -67,7 +67,7 @@ export function generateWorkingHoursText(workingHours) {
 
   const weekdaysOrder = ['1', '2', '3', '4', '5', '6', '0'];
   const dayShortNames = {
-    '1': 'Seg',
+    '1': 'Segunda',
     '2': 'Ter',
     '3': 'Qua',
     '4': 'Qui',
