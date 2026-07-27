@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { FaLock, FaEnvelope, FaChevronLeft } from 'react-icons/fa';
+import { getSalonSettings } from '../services/salonSettings';
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [salon, setSalon] = useState(getSalonSettings());
+
+  useEffect(() => {
+    const updateSalon = () => setSalon(getSalonSettings());
+    window.addEventListener('salonSettingsUpdated', updateSalon);
+    return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -54,7 +62,7 @@ export default function Login() {
         <div className="card-glass p-8 md:p-10 shadow-glass border border-white/50 bg-white/75">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">Acesso Administrativo</h1>
-            <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Faça login para gerenciar a agenda, profissionais e serviços do Studio Beauty.</p>
+            <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Faça login para gerenciar a agenda, profissionais e serviços do {salon.name || 'Studio Beauty'}.</p>
           </div>
 
           <form onSubmit={handleLogin} className="flex flex-col gap-5">

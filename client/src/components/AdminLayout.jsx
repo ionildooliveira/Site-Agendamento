@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { getSalonSettings } from '../services/salonSettings';
 import { 
   FaChartPie, FaCalendarAlt, FaCut, FaUsers, 
   FaCog, FaSignOutAlt, FaBars, FaTimes, FaUserTie 
@@ -21,6 +22,13 @@ export default function AdminLayout() {
     return 'Administrador';
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [salon, setSalon] = useState(getSalonSettings());
+
+  useEffect(() => {
+    const updateSalon = () => setSalon(getSalonSettings());
+    window.addEventListener('salonSettingsUpdated', updateSalon);
+    return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('studio_beauty_token');
@@ -56,7 +64,7 @@ export default function AdminLayout() {
       
       {/* Mobile Header */}
       <header className="md:hidden bg-white/95 border-b border-rose-light/20 backdrop-blur-md px-6 py-4 flex justify-between items-center z-40 sticky top-0 shadow-sm">
-        <span className="text-xl font-bold text-gradient font-heading">Studio Beauty</span>
+        <span className="text-xl font-bold text-gradient font-heading">{salon.name || 'Studio Beauty'}</span>
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="text-mink p-2 text-xl"
@@ -75,7 +83,7 @@ export default function AdminLayout() {
         <div className="flex flex-col gap-10">
           {/* Logo */}
           <div className="hidden md:block px-3">
-            <span className="text-2xl font-bold text-gradient font-heading block tracking-wide">Studio Beauty</span>
+            <span className="text-2xl font-bold text-gradient font-heading block tracking-wide">{salon.name || 'Studio Beauty'}</span>
             <span className="text-[9px] text-gray-400 font-bold tracking-widest uppercase mt-1 block">Painel de Controle</span>
           </div>
 

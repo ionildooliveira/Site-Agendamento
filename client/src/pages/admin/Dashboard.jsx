@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
-import { 
-  FaCalendarCheck, FaCalendarDay, FaCoins, FaUserFriends, 
+import { FaCalendarCheck, FaCalendarDay, FaCoins, FaUserFriends, 
   FaRegClock, FaChevronRight, FaStar 
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { getSalonSettings } from '../../services/salonSettings';
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -21,6 +21,13 @@ export default function AdminDashboard() {
     todaySchedule: [],
     upcomingBookings: []
   });
+  const [salon, setSalon] = useState(getSalonSettings());
+
+  useEffect(() => {
+    const updateSalon = () => setSalon(getSalonSettings());
+    window.addEventListener('salonSettingsUpdated', updateSalon);
+    return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
+  }, []);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -71,7 +78,7 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-heading font-bold text-gray-900">Dashboard</h1>
-        <p className="text-xs text-gray-500">Métricas gerais e agenda do Studio Beauty.</p>
+        <p className="text-xs text-gray-500">Métricas gerais e agenda do {salon.name || 'Studio Beauty'}.</p>
       </div>
 
       {/* KPI Section */}
