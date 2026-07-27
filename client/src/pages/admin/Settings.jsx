@@ -86,14 +86,27 @@ export default function AdminSettings() {
     initSettings();
   }, []);
 
+  useEffect(() => {
+    const updateSalon = () => {
+      setSalonData(getSalonSettings());
+    };
+    window.addEventListener('salonSettingsUpdated', updateSalon);
+    return () => {
+      window.removeEventListener('salonSettingsUpdated', updateSalon);
+    };
+  }, []);
+
   // Save Salon Identity (Tab 1)
-  const handleSaveSalonIdentity = (e) => {
+  const handleSaveSalonIdentity = async (e) => {
     e.preventDefault();
     try {
-      saveSalonSettings(salonData);
+      setSaving(true);
+      await saveSalonSettings(salonData);
       toast.success('Configurações do Salão e WhatsApp salvas com sucesso!');
     } catch {
       toast.error('Erro ao salvar dados do salão');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -159,7 +172,7 @@ export default function AdminSettings() {
 
       const formattedHoursText = generateWorkingHoursText(workingHours);
       if (formattedHoursText) {
-        saveSalonSettings({ workingHoursText: formattedHoursText });
+        await saveSalonSettings({ workingHoursText: formattedHoursText });
         setSalonData(prev => ({ ...prev, workingHoursText: formattedHoursText }));
       }
 

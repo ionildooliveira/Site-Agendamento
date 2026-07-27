@@ -144,6 +144,14 @@ export const settingsAPI = {
     const response = await api.put('/settings', data);
     return response.data;
   },
+  getSalonData: async () => {
+    const response = await api.get('/settings/salon-data');
+    return response.data;
+  },
+  updateSalonData: async (salonData) => {
+    const response = await api.put('/settings/salon-data', { salonData });
+    return response.data;
+  },
   getBlockedDates: async (professionalId) => {
     const response = await api.get('/settings/blocked-dates', { params: { professionalId } });
     return response.data;

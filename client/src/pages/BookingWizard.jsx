@@ -20,6 +20,12 @@ export default function BookingWizard() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const updateSalon = () => setSalon(getSalonSettings());
+    window.addEventListener('salonSettingsUpdated', updateSalon);
+    return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
+  }, []);
+
   // Data lists
   const [services, setServices] = useState([]);
   const [professionals, setProfessionals] = useState([]);

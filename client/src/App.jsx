@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { syncSalonSettings } from './services/salonSettings';
 
 // Client pages
 import LandingPage from './pages/LandingPage';
@@ -18,6 +20,10 @@ import AdminClients from './pages/admin/Clients';
 import AdminSettings from './pages/admin/Settings';
 
 export default function App() {
+  useEffect(() => {
+    syncSalonSettings();
+  }, []);
+
   return (
     <BrowserRouter>
       {/* Toast notifications handler */}

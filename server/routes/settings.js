@@ -31,6 +31,32 @@ router.put('/', authenticateAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
+// GET /api/settings/salon-data
+router.get('/salon-data', async (req, res) => {
+  const supabase = getDB();
+  const { data } = await supabase.from('settings').select('working_hours').eq('id', 2).single();
+  
+  if (!data) return res.json({});
+  
+  const salonData = typeof data.working_hours === 'string' ? JSON.parse(data.working_hours) : data.working_hours;
+  res.json(salonData || {});
+});
+
+// PUT /api/settings/salon-data (admin)
+router.put('/salon-data', authenticateAdmin, async (req, res) => {
+  const { salonData } = req.body;
+  const supabase = getDB();
+  
+  await supabase.from('settings').upsert({ 
+    id: 2, 
+    working_hours: salonData, 
+    slot_interval: 30 
+  });
+    
+  res.json({ success: true });
+});
+
+
 // GET /api/settings/blocked-dates
 router.get('/blocked-dates', async (req, res) => {
   const supabase = getDB();

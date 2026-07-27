@@ -1,3 +1,5 @@
+import { settingsAPI } from './api';
+
 // Salon Settings Manager stored in localStorage
 const STORAGE_KEY = 'studio_beauty_salon_settings';
 
@@ -26,17 +28,38 @@ export function getSalonSettings() {
   return defaultSettings;
 }
 
-export function saveSalonSettings(settings) {
+export async function saveSalonSettings(settings) {
   try {
     const current = getSalonSettings();
     const updated = { ...current, ...settings };
+    
+    // Save to API
+    await settingsAPI.updateSalonData(updated);
+    
+    // Update local storage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event('salonSettingsUpdated'));
     return updated;
   } catch (err) {
-    console.error('Error saving salon settings to localStorage', err);
+    console.error('Error saving salon settings to API/localStorage', err);
     throw err;
   }
+}
+
+export async function syncSalonSettings() {
+  try {
+    const serverData = await settingsAPI.getSalonData();
+    if (serverData && Object.keys(serverData).length > 0) {
+      const current = getSalonSettings();
+      const updated = { ...current, ...serverData };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new Event('salonSettingsUpdated'));
+      return updated;
+    }
+  } catch (err) {
+    console.error('Error syncing salon settings from API', err);
+  }
+  return null;
 }
 
 export function generateWorkingHoursText(workingHours) {
