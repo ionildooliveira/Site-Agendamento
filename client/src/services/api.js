@@ -9,12 +9,23 @@ const api = axios.create({
   },
 });
 
-// Interceptor to inject JWT token
+let currentTenantId = null;
+
+export const setTenantId = (id) => {
+  currentTenantId = id;
+};
+
+export const getCurrentTenantId = () => currentTenantId;
+
+// Interceptor to inject JWT token and Tenant ID
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('studio_beauty_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (currentTenantId) {
+      config.headers['X-Tenant-Id'] = currentTenantId;
     }
     return config;
   },
@@ -48,6 +59,13 @@ export const authAPI = {
     const response = await api.put('/auth/admin/credentials', data);
     return response.data;
   },
+};
+
+export const companiesAPI = {
+  getBySlug: async (slug) => {
+    const response = await api.get(`/companies/${slug}`);
+    return response.data;
+  }
 };
 
 export const servicesAPI = {

@@ -1,7 +1,7 @@
-import { settingsAPI } from './api';
+import { settingsAPI, getCurrentTenantId } from './api';
 
 // Salon Settings Manager stored in localStorage
-const STORAGE_KEY = 'studio_beauty_salon_settings';
+const getStorageKey = () => `studio_beauty_salon_settings_${getCurrentTenantId() || 'admin'}`;
 
 const defaultSettings = {
   name: 'Studio Beauty',
@@ -18,7 +18,8 @@ const defaultSettings = {
 
 export function getSalonSettings() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey();
+    const stored = localStorage.getItem(key);
     if (stored) {
       return { ...defaultSettings, ...JSON.parse(stored) };
     }
@@ -37,7 +38,8 @@ export async function saveSalonSettings(settings) {
     await settingsAPI.updateSalonData(updated);
     
     // Update local storage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const key = getStorageKey();
+    localStorage.setItem(key, JSON.stringify(updated));
     window.dispatchEvent(new Event('salonSettingsUpdated'));
     return updated;
   } catch (err) {
@@ -52,7 +54,8 @@ export async function syncSalonSettings() {
     if (serverData && Object.keys(serverData).length > 0) {
       const current = getSalonSettings();
       const updated = { ...current, ...serverData };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      const key = getStorageKey();
+      localStorage.setItem(key, JSON.stringify(updated));
       window.dispatchEvent(new Event('salonSettingsUpdated'));
       return updated;
     }

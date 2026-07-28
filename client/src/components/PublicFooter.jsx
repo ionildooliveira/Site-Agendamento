@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { FaWhatsapp, FaMapMarkerAlt, FaClock, FaEnvelope, FaCut, FaHeart } from 'react-icons/fa';
 import { getSalonSettings } from '../services/salonSettings';
 
 export default function PublicFooter() {
   const [salon, setSalon] = useState(getSalonSettings());
+  const { companySlug } = useParams();
 
   useEffect(() => {
     const updateSalon = () => {
@@ -56,16 +57,16 @@ export default function PublicFooter() {
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Navegação</h4>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-[#E8A5C8] transition">Início</Link>
+                <Link to={`/${companySlug}`} className="text-gray-400 hover:text-[#E8A5C8] transition">Início</Link>
               </li>
               <li>
-                <Link to="/servicos" className="text-gray-400 hover:text-[#E8A5C8] transition">Nossos Serviços</Link>
+                <Link to={`/${companySlug}/servicos`} className="text-gray-400 hover:text-[#E8A5C8] transition">Nossos Serviços</Link>
               </li>
               <li>
-                <Link to="/agendar" className="text-gray-400 hover:text-[#E8A5C8] transition">Agendar Online (24h)</Link>
+                <Link to={`/${companySlug}/agendar`} className="text-gray-400 hover:text-[#E8A5C8] transition">Agendar Online (24h)</Link>
               </li>
               <li>
-                <Link to="/meus-agendamentos" className="text-gray-400 hover:text-[#E8A5C8] transition">Meus Agendamentos</Link>
+                <Link to={`/${companySlug}/meus-agendamentos`} className="text-gray-400 hover:text-[#E8A5C8] transition">Meus Agendamentos</Link>
               </li>
               <li>
                 <Link to="/admin/login" className="text-gray-400 hover:text-[#E8A5C8] transition">Área Administrativa</Link>

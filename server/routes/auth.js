@@ -24,14 +24,14 @@ const loginHandler = async (req, res) => {
   }
 
   const token = jwt.sign(
-    { id: admin.id, email: admin.email, name: admin.name },
+    { id: admin.id, email: admin.email, name: admin.name, company_id: admin.company_id },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES }
   );
 
   res.json({
     token,
-    admin: { id: admin.id, name: admin.name, email: admin.email },
+    admin: { id: admin.id, name: admin.name, email: admin.email, company_id: admin.company_id },
   });
 };
 

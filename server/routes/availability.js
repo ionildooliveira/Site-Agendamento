@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../database/db');
+const { setTenantId } = require('../middleware/tenant');
 
 // Helper: HH:MM → minutes
 function toMin(t) {
@@ -14,7 +15,7 @@ function toMin(t) {
  *
  * Returns array of { time: "HH:MM", available: boolean }
  */
-router.get('/', async (req, res) => {
+router.get('/', setTenantId, async (req, res) => {
   const { professionalId, date, serviceId } = req.query;
 
   if (!professionalId || !date || !serviceId) {
@@ -37,7 +38,7 @@ router.get('/', async (req, res) => {
   const dayOfWeek = reqDate.getDay().toString();
 
   // ── 3. Get working hours ──────────────────────────────────────────────────
-  const { data: settings } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data: settings } = await supabase.from('settings').select('*').eq('company_id', req.tenantId).single();
   const workingHours = settings?.working_hours || {};
   const dayHours = workingHours[dayOfWeek];
 
@@ -49,6 +50,7 @@ router.get('/', async (req, res) => {
   const { data: blockedDates } = await supabase.from('blocked_dates')
     .select('reason, professional_id')
     .eq('date', date)
+    .eq('company_id', req.tenantId)
     .or(`professional_id.is.null,professional_id.eq.${professionalId}`);
 
   if (blockedDates && blockedDates.length > 0) {
@@ -56,7 +58,7 @@ router.get('/', async (req, res) => {
   }
 
   // ── 5. Get service duration ───────────────────────────────────────────────
-  const { data: service } = await supabase.from('services').select('*').eq('id', serviceId).single();
+  const { data: service } = await supabase.from('services').select('*').eq('id', serviceId).eq('company_id', req.tenantId).single();
   if (!service) return res.status(404).json({ error: 'Serviço não encontrado' });
 
   const duration = service.duration_minutes;
@@ -77,6 +79,7 @@ router.get('/', async (req, res) => {
     .select('start_time, end_time')
     .eq('professional_id', professionalId)
     .eq('booking_date', date)
+    .eq('company_id', req.tenantId)
     .neq('status', 'cancelled');
 
   const occupiedRanges = (existingBookings || []).map(b => ({

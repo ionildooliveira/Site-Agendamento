@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { bookingsAPI, availabilityAPI } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { 
@@ -11,6 +11,7 @@ import PublicFooter from '../components/PublicFooter';
 import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
 
 export default function MyBookings() {
+  const { companySlug } = useParams();
   const [email, setEmail] = useState('');
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -189,7 +190,7 @@ export default function MyBookings() {
                 <FaCalendarTimes className="text-5xl text-rose-dark/30 mx-auto mb-4 animate-float" />
                 <h3 className="text-lg font-bold text-mink mb-1">Nenhum agendamento ativo</h3>
                 <p className="text-xs text-gray-500 leading-relaxed">Não encontramos agendamentos para o e-mail <strong>{email}</strong>.</p>
-                <Link to="/" className="btn-primary mt-6 inline-flex text-xs py-2.5 px-6">
+                <Link to={`/${companySlug}`} className="btn-primary mt-6 inline-flex text-xs py-2.5 px-6">
                   Agendar um Horário
                 </Link>
               </div>

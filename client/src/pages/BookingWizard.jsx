@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useParams } from 'react-router-dom';
 import { servicesAPI, professionalsAPI, availabilityAPI, bookingsAPI } from '../services/api';
 import { getSalonSettings } from '../services/salonSettings';
 import { toast } from 'react-hot-toast';
@@ -15,6 +15,7 @@ import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
 
 export default function BookingWizard() {
   const location = useLocation();
+  const { companySlug } = useParams();
 
   const [salon, setSalon] = useState(getSalonSettings());
   const [step, setStep] = useState(1);
@@ -704,7 +705,7 @@ export default function BookingWizard() {
                     </a>
 
                     <Link
-                      to="/"
+                      to={`/${companySlug}`}
                       className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-[#D47FA6] text-[#D47FA6] font-semibold text-sm hover:bg-[#FFF0F6] transition-all flex-1"
                     >
                       Voltar ao Início

@@ -12,6 +12,7 @@ const bookingsRoutes = require('./routes/bookings');
 const clientsRoutes = require('./routes/clients');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
+const companiesRoutes = require('./routes/companies');
 const { authenticateAdmin } = require('./middleware/auth');
 const { getDB } = require('./database/db');
 
@@ -42,6 +43,7 @@ app.use('/api/appointments', bookingsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/companies', companiesRoutes);
 
 // Direct spec aliases
 app.get('/api/dashboard', authenticateAdmin, (req, res, next) => {

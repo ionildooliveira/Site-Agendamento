@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { syncSalonSettings } from './services/salonSettings';
-
 // Client pages
 import LandingPage from './pages/LandingPage';
 import ServicesCatalog from './pages/ServicesCatalog';
 import BookingWizard from './pages/BookingWizard';
 import MyBookings from './pages/MyBookings';
+import TenantLayout from './components/TenantLayout';
 
 // Admin pages
 import Login from './pages/Login';
@@ -20,10 +19,6 @@ import AdminClients from './pages/admin/Clients';
 import AdminSettings from './pages/admin/Settings';
 
 export default function App() {
-  useEffect(() => {
-    syncSalonSettings();
-  }, []);
-
   return (
     <BrowserRouter>
       {/* Toast notifications handler */}
@@ -44,10 +39,12 @@ export default function App() {
 
       <Routes>
         {/* Public Client Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/servicos" element={<ServicesCatalog />} />
-        <Route path="/agendar" element={<BookingWizard />} />
-        <Route path="/meus-agendamentos" element={<MyBookings />} />
+        <Route path="/:companySlug" element={<TenantLayout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="servicos" element={<ServicesCatalog />} />
+          <Route path="agendar" element={<BookingWizard />} />
+          <Route path="meus-agendamentos" element={<MyBookings />} />
+        </Route>
 
         {/* Admin Authentication routes */}
         <Route path="/login" element={<Login />} />

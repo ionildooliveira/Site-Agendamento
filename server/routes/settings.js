@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { getDB } = require('../database/db');
 const { authenticateAdmin } = require('../middleware/auth');
+const { setTenantId } = require('../middleware/tenant');
 
 // GET /api/settings
-router.get('/', async (req, res) => {
+router.get('/', setTenantId, async (req, res) => {
   const supabase = getDB();
-  const { data: settings } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data: settings } = await supabase.from('settings').select('*').eq('company_id', req.tenantId).single();
   
   if (!settings) return res.status(404).json({ error: 'Configurações não encontradas' });
   
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /api/settings (admin)
-router.put('/', authenticateAdmin, async (req, res) => {
+router.put('/', authenticateAdmin, setTenantId, async (req, res) => {
   const { working_hours, slot_interval } = req.body;
   const supabase = getDB();
   
@@ -26,43 +27,41 @@ router.put('/', authenticateAdmin, async (req, res) => {
       working_hours: working_hours, // Supabase handles JSONB
       slot_interval: slot_interval || 30 
     })
-    .eq('id', 1);
+    .eq('company_id', req.tenantId);
     
   res.json({ success: true });
 });
 
 // GET /api/settings/salon-data
-router.get('/salon-data', async (req, res) => {
+router.get('/salon-data', setTenantId, async (req, res) => {
   const supabase = getDB();
-  const { data } = await supabase.from('settings').select('working_hours').eq('id', 2).single();
+  const { data } = await supabase.from('settings').select('salon_data').eq('company_id', req.tenantId).single();
   
-  if (!data) return res.json({});
+  if (!data || !data.salon_data) return res.json({});
   
-  const salonData = typeof data.working_hours === 'string' ? JSON.parse(data.working_hours) : data.working_hours;
+  const salonData = typeof data.salon_data === 'string' ? JSON.parse(data.salon_data) : data.salon_data;
   res.json(salonData || {});
 });
 
 // PUT /api/settings/salon-data (admin)
-router.put('/salon-data', authenticateAdmin, async (req, res) => {
+router.put('/salon-data', authenticateAdmin, setTenantId, async (req, res) => {
   const { salonData } = req.body;
   const supabase = getDB();
   
-  await supabase.from('settings').upsert({ 
-    id: 2, 
-    working_hours: salonData, 
-    slot_interval: 30 
-  });
+  await supabase.from('settings')
+    .update({ salon_data: salonData })
+    .eq('company_id', req.tenantId);
     
   res.json({ success: true });
 });
 
 
 // GET /api/settings/blocked-dates
-router.get('/blocked-dates', async (req, res) => {
+router.get('/blocked-dates', setTenantId, async (req, res) => {
   const supabase = getDB();
   const { professionalId } = req.query;
   
-  let query = supabase.from('blocked_dates').select('*');
+  let query = supabase.from('blocked_dates').select('*').eq('company_id', req.tenantId);
   
   if (professionalId) {
     query = query.or(`professional_id.is.null,professional_id.eq.${professionalId}`);
@@ -73,7 +72,7 @@ router.get('/blocked-dates', async (req, res) => {
 });
 
 // POST /api/settings/blocked-dates (admin)
-router.post('/blocked-dates', authenticateAdmin, async (req, res) => {
+router.post('/blocked-dates', authenticateAdmin, setTenantId, async (req, res) => {
   const { date, reason, professionalId } = req.body;
   if (!date) return res.status(400).json({ error: 'Data é obrigatória' });
   
@@ -82,7 +81,8 @@ router.post('/blocked-dates', authenticateAdmin, async (req, res) => {
     .insert({
       date,
       reason: reason || null,
-      professional_id: professionalId || null
+      professional_id: professionalId || null,
+      company_id: req.tenantId
     })
     .select().single();
     
@@ -90,9 +90,9 @@ router.post('/blocked-dates', authenticateAdmin, async (req, res) => {
 });
 
 // DELETE /api/settings/blocked-dates/:id (admin)
-router.delete('/blocked-dates/:id', authenticateAdmin, async (req, res) => {
+router.delete('/blocked-dates/:id', authenticateAdmin, setTenantId, async (req, res) => {
   const supabase = getDB();
-  await supabase.from('blocked_dates').delete().eq('id', req.params.id);
+  await supabase.from('blocked_dates').delete().eq('id', req.params.id).eq('company_id', req.tenantId);
   res.json({ success: true });
 });
 

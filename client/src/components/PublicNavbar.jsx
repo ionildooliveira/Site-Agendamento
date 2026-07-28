@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { FaCalendarAlt, FaCut, FaLock, FaBars, FaTimes } from 'react-icons/fa';
 import { getSalonSettings } from '../services/salonSettings';
 
@@ -8,6 +8,7 @@ export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const { companySlug } = useParams();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,10 +26,10 @@ export default function PublicNavbar() {
   }, []);
 
   const navLinks = [
-    { name: 'Início', path: '/' },
-    { name: 'Serviços', path: '/servicos' },
-    { name: 'Agendar Horário', path: '/agendar' },
-    { name: 'Meus Agendamentos', path: '/meus-agendamentos' },
+    { name: 'Início', path: `/${companySlug}` },
+    { name: 'Serviços', path: `/${companySlug}/servicos` },
+    { name: 'Agendar Horário', path: `/${companySlug}/agendar` },
+    { name: 'Meus Agendamentos', path: `/${companySlug}/meus-agendamentos` },
   ];
 
   return (
@@ -41,7 +42,7 @@ export default function PublicNavbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to={`/${companySlug}`} className="flex items-center gap-2.5 group">
           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#E8A5C8] to-[#D47FA6] flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
             <FaCut className="text-lg" />
           </div>
@@ -87,7 +88,7 @@ export default function PublicNavbar() {
           </Link>
 
           <Link
-            to="/agendar"
+            to={`/${companySlug}/agendar`}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-medium text-sm shadow-md hover:shadow-lg hover:brightness-105 transition-all transform hover:-translate-y-0.5"
           >
             <FaCalendarAlt className="text-xs" />
@@ -125,7 +126,7 @@ export default function PublicNavbar() {
           })}
           <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
             <Link
-              to="/agendar"
+              to={`/${companySlug}/agendar`}
               onClick={() => setMenuOpen(false)}
               className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-medium text-sm shadow"
             >

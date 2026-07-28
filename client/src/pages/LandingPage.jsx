@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   FaCalendarAlt, FaStar, FaMapMarkerAlt, 
@@ -14,6 +14,7 @@ import { servicesAPI } from '../services/api';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { companySlug } = useParams();
   const [salon, setSalon] = useState(getSalonSettings());
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -140,7 +141,7 @@ export default function LandingPage() {
               className="flex flex-wrap items-center gap-4 pt-4"
             >
               <Link
-                to="/agendar"
+                to={`/${companySlug}/agendar`}
                 className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
               >
                 <FaCalendarAlt />
@@ -149,7 +150,7 @@ export default function LandingPage() {
               </Link>
 
               <Link
-                to="/servicos"
+                to={`/${companySlug}/servicos`}
                 className="inline-flex items-center gap-2 px-6 py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-medium text-base border border-white/30 backdrop-blur-md transition-all duration-300"
               >
                 <span>Conhecer Serviços</span>
@@ -231,7 +232,7 @@ export default function LandingPage() {
                     </div>
 
                     <button
-                      onClick={() => navigate(`/agendar?serviceId=${svc.id}`)}
+                      onClick={() => navigate(`/${companySlug}/agendar?serviceId=${svc.id}`)}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white text-sm font-semibold shadow hover:shadow-md hover:scale-105 transition-all"
                     >
                       <span>Agendar</span>
@@ -245,7 +246,7 @@ export default function LandingPage() {
 
           <div className="text-center mt-12">
             <Link
-              to="/servicos"
+              to={`/${companySlug}/servicos`}
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border-2 border-[#D47FA6] text-[#D47FA6] font-semibold hover:bg-[#D47FA6] hover:text-white transition-all duration-300"
             >
               <span>Ver Todos os Serviços do Catálogo</span>

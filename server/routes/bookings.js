@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const { getDB } = require('../database/db');
 const { authenticateAdmin, JWT_SECRET } = require('../middleware/auth');
+const { setTenantId } = require('../middleware/tenant');
 
 // Helper: HH:MM → minutes
 function toMin(t) {
@@ -18,7 +19,7 @@ function toTime(m) {
 const BOOKING_SELECT = `*, clients(*), professionals(*), services(*)`;
 
 // ── POST /api/bookings  (public) ──────────────────────────────────────────────
-router.post('/', async (req, res) => {
+router.post('/', setTenantId, async (req, res) => {
   const { clientName, clientPhone, clientEmail, serviceId, professionalId, date, startTime, notes } = req.body;
 
   if (!clientName || !clientPhone || !clientEmail || !serviceId || !professionalId || !date || !startTime) {
@@ -39,11 +40,11 @@ router.post('/', async (req, res) => {
   }
 
   // Get service
-  const { data: service } = await supabase.from('services').select('*').eq('id', serviceId).eq('active', true).single();
+  const { data: service } = await supabase.from('services').select('*').eq('id', serviceId).eq('active', true).eq('company_id', req.tenantId).single();
   if (!service) return res.status(404).json({ error: 'Serviço não encontrado' });
 
   // Get professional
-  const { data: professional } = await supabase.from('professionals').select('*').eq('id', professionalId).eq('active', true).single();
+  const { data: professional } = await supabase.from('professionals').select('*').eq('id', professionalId).eq('active', true).eq('company_id', req.tenantId).single();
   if (!professional) return res.status(404).json({ error: 'Profissional não encontrada' });
 
   // Calculate end time
@@ -52,7 +53,7 @@ router.post('/', async (req, res) => {
   const endTime  = toTime(endMin);
 
   // Check working hours
-  const { data: settings } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data: settings } = await supabase.from('settings').select('*').eq('company_id', req.tenantId).single();
   const hours = settings?.working_hours || {};
   const dayKey = new Date(date + 'T00:00:00').getDay().toString();
   const dayHours = hours[dayKey];
@@ -68,6 +69,7 @@ router.post('/', async (req, res) => {
   const { data: blocked } = await supabase.from('blocked_dates')
     .select('reason')
     .eq('date', date)
+    .eq('company_id', req.tenantId)
     .or(`professional_id.is.null,professional_id.eq.${professionalId}`);
 
   if (blocked && blocked.length > 0) return res.status(409).json({ error: blocked[0].reason || 'Esta data está bloqueada' });
@@ -77,6 +79,7 @@ router.post('/', async (req, res) => {
     .select('id')
     .eq('professional_id', professionalId)
     .eq('booking_date', date)
+    .eq('company_id', req.tenantId)
     .neq('status', 'cancelled')
     .lt('start_time', endTime)
     .gt('end_time', startTime);
@@ -89,11 +92,11 @@ router.post('/', async (req, res) => {
   }
 
   // Find or create client
-  let { data: client } = await supabase.from('clients').select('*').ilike('email', clientEmail.trim()).single();
+  let { data: client } = await supabase.from('clients').select('*').ilike('email', clientEmail.trim()).eq('company_id', req.tenantId).single();
   
   if (!client) {
     const { data: newClient } = await supabase.from('clients')
-      .insert({ name: clientName.trim(), phone: clientPhone.trim(), email: clientEmail.toLowerCase().trim() })
+      .insert({ name: clientName.trim(), phone: clientPhone.trim(), email: clientEmail.toLowerCase().trim(), company_id: req.tenantId })
       .select().single();
     client = newClient;
   } else {
@@ -112,7 +115,8 @@ router.post('/', async (req, res) => {
       end_time: endTime,
       notes: notes || null,
       cancel_token: cancelToken,
-      status: 'confirmed'
+      status: 'confirmed',
+      company_id: req.tenantId
     })
     .select(BOOKING_SELECT)
     .single();
@@ -143,11 +147,11 @@ router.post('/', async (req, res) => {
 });
 
 // ── GET /api/bookings  (admin) ────────────────────────────────────────────────
-router.get('/', authenticateAdmin, async (req, res) => {
+router.get('/', authenticateAdmin, setTenantId, async (req, res) => {
   const supabase = getDB();
   const { date, status, professionalId, startDate, endDate } = req.query;
 
-  let query = supabase.from('bookings').select(BOOKING_SELECT);
+  let query = supabase.from('bookings').select(BOOKING_SELECT).eq('company_id', req.tenantId);
 
   if (date) query = query.eq('booking_date', date);
   if (startDate) query = query.gte('booking_date', startDate);
@@ -175,19 +179,20 @@ router.get('/', authenticateAdmin, async (req, res) => {
 });
 
 // ── GET /api/bookings/client  (client lookup by email) ────────────────────────
-router.get('/client', async (req, res) => {
+router.get('/client', setTenantId, async (req, res) => {
   const { email } = req.query;
   if (!email) return res.status(400).json({ error: 'Email é obrigatório' });
 
   const supabase = getDB();
   
   // Find client first
-  const { data: client } = await supabase.from('clients').select('id').ilike('email', email.trim()).single();
+  const { data: client } = await supabase.from('clients').select('id').ilike('email', email.trim()).eq('company_id', req.tenantId).single();
   if (!client) return res.json([]);
 
   const { data: bookings } = await supabase.from('bookings')
     .select(BOOKING_SELECT)
     .eq('client_id', client.id)
+    .eq('company_id', req.tenantId)
     .order('booking_date', { ascending: false })
     .order('start_time', { ascending: false });
 
@@ -212,7 +217,7 @@ const updateBookingHandler = async (req, res) => {
   const authHeader = req.headers['authorization'];
 
   const supabase = getDB();
-  const { data: booking } = await supabase.from('bookings').select('*').eq('id', id).single();
+  const { data: booking } = await supabase.from('bookings').select('*').eq('id', id).eq('company_id', req.tenantId).single();
   if (!booking) return res.status(404).json({ error: 'Agendamento não encontrado' });
 
   // Authorization check
@@ -230,7 +235,7 @@ const updateBookingHandler = async (req, res) => {
   if (date && startTime) {
     const svcId = serviceId || booking.service_id;
     const proId = professionalId || booking.professional_id;
-    const { data: svc } = await supabase.from('services').select('*').eq('id', svcId).single();
+    const { data: svc } = await supabase.from('services').select('*').eq('id', svcId).eq('company_id', req.tenantId).single();
     
     const newStart = toMin(startTime);
     const newEnd   = newStart + svc.duration_minutes;
@@ -248,6 +253,7 @@ const updateBookingHandler = async (req, res) => {
       .select('id')
       .eq('professional_id', proId)
       .eq('booking_date', date)
+      .eq('company_id', req.tenantId)
       .neq('status', 'cancelled')
       .neq('id', id)
       .lt('start_time', newEndTime)
@@ -292,13 +298,13 @@ const updateBookingHandler = async (req, res) => {
   res.json({ success: true, booking: formattedUpdated });
 };
 
-router.put('/:id', updateBookingHandler);
-router.patch('/:id', updateBookingHandler);
+router.put('/:id', setTenantId, updateBookingHandler);
+router.patch('/:id', setTenantId, updateBookingHandler);
 
 // ── DELETE /api/bookings/:id  (admin) — Hard Delete ─────────────────────────
-router.delete('/:id', authenticateAdmin, async (req, res) => {
+router.delete('/:id', authenticateAdmin, setTenantId, async (req, res) => {
   const supabase = getDB();
-  await supabase.from('bookings').delete().eq('id', req.params.id);
+  await supabase.from('bookings').delete().eq('id', req.params.id).eq('company_id', req.tenantId);
   res.json({ success: true });
 });
 

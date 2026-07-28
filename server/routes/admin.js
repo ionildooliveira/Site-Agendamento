@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { getDB } = require('../database/db');
 const { authenticateAdmin } = require('../middleware/auth');
+const { setTenantId } = require('../middleware/tenant');
 
 // GET /api/admin/dashboard
-router.get('/dashboard', authenticateAdmin, async (req, res) => {
+router.get('/dashboard', authenticateAdmin, setTenantId, async (req, res) => {
   const supabase = getDB();
 
   const today = new Date().toISOString().split('T')[0];
@@ -15,23 +16,23 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
   try {
     // Total bookings (all time)
     const { count: totalBookings } = await supabase
-      .from('bookings').select('*', { count: 'exact', head: true }).neq('status', 'cancelled');
+      .from('bookings').select('*', { count: 'exact', head: true }).eq('company_id', req.tenantId).neq('status', 'cancelled');
 
     // Today's bookings
     const { count: todayBookings } = await supabase
       .from('bookings').select('*', { count: 'exact', head: true })
-      .eq('booking_date', today).neq('status', 'cancelled');
+      .eq('booking_date', today).eq('company_id', req.tenantId).neq('status', 'cancelled');
 
     // This month's bookings
     const { count: monthBookings } = await supabase
       .from('bookings').select('*', { count: 'exact', head: true })
-      .gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).neq('status', 'cancelled');
+      .gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).eq('company_id', req.tenantId).neq('status', 'cancelled');
 
     // Fetch this month's bookings for revenue and top services
     const { data: monthBookingsData } = await supabase
       .from('bookings')
       .select('service_id, services(name, price)')
-      .gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).neq('status', 'cancelled');
+      .gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).eq('company_id', req.tenantId).neq('status', 'cancelled');
 
     let monthRevenue = 0;
     const serviceStats = {};
@@ -53,7 +54,7 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
 
     // Recurring clients
     const { data: allBookings } = await supabase
-      .from('bookings').select('client_id').neq('status', 'cancelled');
+      .from('bookings').select('client_id').eq('company_id', req.tenantId).neq('status', 'cancelled');
     
     const clientCounts = {};
     (allBookings || []).forEach(b => {
@@ -70,7 +71,7 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
         professionals (name),
         services (name, duration_minutes, price)
       `)
-      .eq('booking_date', today).neq('status', 'cancelled')
+      .eq('booking_date', today).eq('company_id', req.tenantId).neq('status', 'cancelled')
       .order('start_time', { ascending: true });
 
     // Format todaySchedule to match frontend expectations
@@ -97,7 +98,7 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
         professionals (name),
         services (name)
       `)
-      .gte('booking_date', today).lte('booking_date', futureDateStr).neq('status', 'cancelled')
+      .gte('booking_date', today).lte('booking_date', futureDateStr).eq('company_id', req.tenantId).neq('status', 'cancelled')
       .order('booking_date', { ascending: true })
       .order('start_time', { ascending: true })
       .limit(20);
@@ -128,7 +129,7 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
 });
 
 // GET /api/admin/schedule?view=day|week|month&date=YYYY-MM-DD
-router.get('/schedule', authenticateAdmin, async (req, res) => {
+router.get('/schedule', authenticateAdmin, setTenantId, async (req, res) => {
   const supabase = getDB();
   const { view = 'day', date } = req.query;
   const baseDate = date || new Date().toISOString().split('T')[0];
@@ -158,7 +159,7 @@ router.get('/schedule', authenticateAdmin, async (req, res) => {
       professionals (name),
       services (name, price, duration_minutes, category)
     `)
-    .gte('booking_date', startDate).lte('booking_date', endDate).neq('status', 'cancelled')
+    .gte('booking_date', startDate).lte('booking_date', endDate).eq('company_id', req.tenantId).neq('status', 'cancelled')
     .order('booking_date', { ascending: true })
     .order('start_time', { ascending: true });
 
@@ -178,11 +179,11 @@ router.get('/schedule', authenticateAdmin, async (req, res) => {
 });
 
 // GET /api/admin/clients
-router.get('/clients', authenticateAdmin, async (req, res) => {
+router.get('/clients', authenticateAdmin, setTenantId, async (req, res) => {
   const supabase = getDB();
   
-  const { data: clients } = await supabase.from('clients').select('*').order('name', { ascending: true });
-  const { data: bookings } = await supabase.from('bookings').select('client_id, booking_date').neq('status', 'cancelled');
+  const { data: clients } = await supabase.from('clients').select('*').eq('company_id', req.tenantId).order('name', { ascending: true });
+  const { data: bookings } = await supabase.from('bookings').select('client_id, booking_date').eq('company_id', req.tenantId).neq('status', 'cancelled');
   
   const bookingStats = {};
   (bookings || []).forEach(b => {

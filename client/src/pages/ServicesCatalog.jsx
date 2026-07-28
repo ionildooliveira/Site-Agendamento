@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { servicesAPI } from '../services/api';
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
@@ -8,6 +8,7 @@ import { FaClock, FaArrowRight, FaCut, FaSearch } from 'react-icons/fa';
 
 export default function ServicesCatalog() {
   const navigate = useNavigate();
+  const { companySlug } = useParams();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -161,7 +162,7 @@ export default function ServicesCatalog() {
                         </div>
 
                         <button
-                          onClick={() => navigate(`/agendar?serviceId=${svc.id}`)}
+                          onClick={() => navigate(`/${companySlug}/agendar?serviceId=${svc.id}`)}
                           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white text-sm font-semibold shadow hover:shadow-md hover:scale-105 transition-all"
                         >
                           <span>Agendar Agora</span>
