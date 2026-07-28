@@ -24,8 +24,22 @@ api.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
-    if (currentTenantId) {
-      config.headers['X-Tenant-Id'] = currentTenantId;
+    
+    let tenantId = currentTenantId;
+    if (!tenantId) {
+      const adminData = localStorage.getItem('studio_beauty_admin');
+      if (adminData) {
+        try {
+          const admin = JSON.parse(adminData);
+          if (admin.company_id) {
+            tenantId = admin.company_id;
+          }
+        } catch (e) {}
+      }
+    }
+
+    if (tenantId) {
+      config.headers['X-Tenant-Id'] = tenantId;
     }
     return config;
   },
