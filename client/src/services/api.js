@@ -195,4 +195,13 @@ export const clientsAPI = {
   },
 };
 
+export const superAdminAPI = {
+  createCompany: async (data, password) => {
+    const response = await api.post('/companies/create', data, {
+      headers: { 'X-Super-Admin-Password': password }
+    });
+    return response;
+  }
+};
+
 export default api;
