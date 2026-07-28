@@ -8,6 +8,10 @@ import BookingWizard from './pages/BookingWizard';
 import MyBookings from './pages/MyBookings';
 import TenantLayout from './components/TenantLayout';
 
+// Super Admin
+import SuperAdminLogin from './pages/super-admin/SuperAdminLogin';
+import SuperAdminDashboard from './pages/super-admin/SuperAdminDashboard';
+
 // Admin pages
 import Login from './pages/Login';
 import AdminLayout from './components/AdminLayout';
@@ -60,6 +64,11 @@ export default function App() {
           <Route path="clientes" element={<AdminClients />} />
           <Route path="configuracoes" element={<AdminSettings />} />
         </Route>
+
+        {/* Super Admin Routes */}
+        <Route path="/super-admin/login" element={<SuperAdminLogin />} />
+        <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+        <Route path="/super-admin" element={<Navigate to="/super-admin/login" replace />} />
 
         {/* Platform Root */}
         <Route path="/" element={
