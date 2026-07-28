@@ -61,6 +61,14 @@ export default function App() {
           <Route path="configuracoes" element={<AdminSettings />} />
         </Route>
 
+        {/* Platform Root */}
+        <Route path="/" element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col gap-4 text-center p-4">
+            <h1 className="text-2xl font-bold text-[#4A323D]">Plataforma de Agendamento</h1>
+            <p className="text-gray-600">Por favor, acesse o link específico da sua empresa.</p>
+          </div>
+        } />
+
         {/* Catch-all Redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
