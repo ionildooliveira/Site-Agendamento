@@ -14,15 +14,10 @@ export default function Login() {
   const [salon, setSalon] = useState(getSalonSettings());
 
   useEffect(() => {
-    const token = localStorage.getItem(`studio_beauty_token_${companySlug}`);
-    if (token) {
-      navigate(`/${companySlug}/admin`);
-    }
-
     const updateSalon = () => setSalon(getSalonSettings());
     window.addEventListener('salonSettingsUpdated', updateSalon);
     return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
-  }, [navigate]);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
