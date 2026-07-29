@@ -70,6 +70,17 @@ router.post('/create', authenticateSuperAdmin, async (req, res) => {
           id: newSettingsId,
           company_id: company.id,
           slot_interval: 30,
+          salon_data: {
+            name: companyName,
+            slogan: 'Elegância, cuidado & sofisticação para sua beleza',
+            description: 'Um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta com profissionais altamente especializados.',
+            address: 'Av. Principal, 1000 - Centro',
+            cityState: 'São Paulo - SP',
+            whatsapp: '',
+            email: adminEmail,
+            workingHoursText: 'Seg a Sexta: 09h às 19h | Sáb: 09h às 17h',
+            heroImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80',
+          },
           working_hours: {
             "0": null,
             "1": { "open": "09:00", "close": "19:00" },
