@@ -101,9 +101,14 @@ router.post('/', setTenantId, async (req, res) => {
   let { data: client } = await supabase.from('clients').select('*').ilike('email', clientEmail.trim()).eq('company_id', req.tenantId).single();
   
   if (!client) {
-    const { data: newClient } = await supabase.from('clients')
+    const { data: newClient, error: insertError } = await supabase.from('clients')
       .insert({ name: clientName.trim(), phone: clientPhone.trim(), email: clientEmail.toLowerCase().trim(), company_id: req.tenantId })
       .select().single();
+      
+    if (insertError || !newClient) {
+      console.error('Error inserting client:', insertError);
+      return res.status(400).json({ error: 'Erro ao registrar cliente. Este e-mail já pode estar em uso por outra conta.' });
+    }
     client = newClient;
   } else {
     await supabase.from('clients').update({ name: clientName.trim(), phone: clientPhone.trim() }).eq('id', client.id);
