@@ -20,7 +20,8 @@ const BOOKING_SELECT = `*, clients(*), professionals(*), services(*)`;
 
 // ── POST /api/bookings  (public) ──────────────────────────────────────────────
 router.post('/', setTenantId, async (req, res) => {
-  const { clientName, clientPhone, clientEmail, serviceId, professionalId, date, startTime, notes } = req.body;
+  try {
+    const { clientName, clientPhone, clientEmail, serviceId, professionalId, date, startTime, notes } = req.body;
 
   if (!clientName || !clientPhone || !clientEmail || !serviceId || !professionalId || !date || !startTime) {
     return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser preenchidos' });
@@ -54,7 +55,12 @@ router.post('/', setTenantId, async (req, res) => {
 
   // Check working hours
   const { data: settings } = await supabase.from('settings').select('*').eq('company_id', req.tenantId).single();
-  const hours = settings?.working_hours || {};
+  let hours = {};
+  if (settings && settings.working_hours) {
+    hours = typeof settings.working_hours === 'string'
+      ? JSON.parse(settings.working_hours)
+      : settings.working_hours;
+  }
   const dayKey = new Date(date + 'T00:00:00').getDay().toString();
   const dayHours = hours[dayKey];
 
@@ -138,12 +144,16 @@ router.post('/', setTenantId, async (req, res) => {
     duration_minutes: bookingResult.services?.duration_minutes
   };
 
-  res.status(201).json({
-    success: true,
-    booking,
-    cancelToken,
-    message: `✅ Agendamento confirmado! ${service.name} com ${professional.name} em ${date} às ${startTime}.`,
-  });
+    res.status(201).json({
+      success: true,
+      booking,
+      cancelToken,
+      message: `✅ Agendamento confirmado! ${service.name} com ${professional.name} em ${date} às ${startTime}.`,
+    });
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    res.status(500).json({ error: 'Erro interno ao processar o agendamento' });
+  }
 });
 
 // ── GET /api/bookings  (admin) ────────────────────────────────────────────────
