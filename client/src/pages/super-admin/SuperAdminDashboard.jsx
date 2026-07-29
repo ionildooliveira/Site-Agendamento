@@ -117,6 +117,12 @@ export default function SuperAdminDashboard() {
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+            {/* Hack para impedir o Chrome de auto-preencher os campos reais */}
+            <div style={{ width: 0, height: 0, overflow: 'hidden', position: 'absolute' }}>
+              <input type="email" name="fake_email_autofill" tabIndex="-1" aria-hidden="true" />
+              <input type="password" name="fake_password_autofill" tabIndex="-1" aria-hidden="true" />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Company Name */}
               <div>
@@ -178,7 +184,7 @@ export default function SuperAdminDashboard() {
                       value={formData.adminEmail}
                       onChange={handleChange}
                       required
-                      autoComplete="new-password"
+                      autoComplete="nope"
                       className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4A323D] outline-none"
                       placeholder="admin@salao.com"
                     />
