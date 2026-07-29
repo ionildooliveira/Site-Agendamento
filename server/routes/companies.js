@@ -12,6 +12,11 @@ const authenticateSuperAdmin = (req, res, next) => {
   next();
 };
 
+// Verify super admin password
+router.post('/verify-super-admin', authenticateSuperAdmin, (req, res) => {
+  res.json({ success: true, message: 'Senha válida' });
+});
+
 // Create a new company (Protected by Super Admin Password)
 router.post('/create', authenticateSuperAdmin, async (req, res) => {
   const { companyName, companySlug, adminEmail, adminPassword } = req.body;

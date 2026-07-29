@@ -1,23 +1,37 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaLock, FaChevronRight } from 'react-icons/fa';
+import api from '../../services/api';
 
 export default function SuperAdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!password) {
       setError('Por favor, insira a senha mestra.');
       return;
     }
     
-    // We just save the password in sessionStorage and proceed to the dashboard.
-    // The actual validation will happen when they try to create a company.
-    sessionStorage.setItem('superAdminPassword', password);
-    navigate('/super-admin/dashboard');
+    try {
+      setLoading(true);
+      await api.post('/companies/verify-super-admin', {}, {
+        headers: {
+          'x-super-admin-password': password
+        }
+      });
+      
+      sessionStorage.setItem('superAdminPassword', password);
+      navigate('/super-admin/dashboard');
+    } catch (err) {
+      console.error(err);
+      setError('Senha mestra inválida.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
