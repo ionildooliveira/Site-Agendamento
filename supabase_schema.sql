@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE TABLE IF NOT EXISTS settings (
   id            BIGINT PRIMARY KEY DEFAULT 1,
   working_hours JSONB NOT NULL DEFAULT '{"0":null,"1":{"open":"09:00","close":"19:00"},"2":{"open":"09:00","close":"19:00"},"3":{"open":"09:00","close":"19:00"},"4":{"open":"09:00","close":"19:00"},"5":{"open":"09:00","close":"19:00"},"6":{"open":"09:00","close":"17:00"}}'::jsonb,
-  slot_interval INTEGER DEFAULT 30
+  slot_interval INTEGER DEFAULT 30,
+  salon_data    JSONB
 );
 
 -- ── Blocked Dates ────────────────────────────────────────────────────────

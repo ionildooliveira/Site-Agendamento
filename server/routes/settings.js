@@ -75,19 +75,27 @@ router.put('/salon-data', authenticateAdmin, setTenantId, async (req, res) => {
   
   const { data: existing } = await supabase.from('settings').select('id').eq('company_id', req.tenantId).single();
   
+  let error;
   if (existing) {
-    await supabase.from('settings')
+    const res = await supabase.from('settings')
       .update({ salon_data: salonData })
       .eq('company_id', req.tenantId);
+    error = res.error;
   } else {
-    await supabase.from('settings')
+    const res = await supabase.from('settings')
       .insert({
         id: Date.now(),
         company_id: req.tenantId,
         salon_data: salonData
       });
+    error = res.error;
   }
     
+  if (error) {
+    console.error('Error saving salon_data:', error);
+    return res.status(500).json({ error: 'Erro ao salvar configurações do salão' });
+  }
+  
   res.json({ success: true });
 });
 
