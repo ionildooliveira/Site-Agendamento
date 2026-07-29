@@ -55,7 +55,7 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10 animate-fade-in">
         
         {/* Back Link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-mink/70 hover:text-rose-dark text-xs font-bold uppercase tracking-wider mb-8 transition-colors">
+        <Link to={`/${companySlug || ''}`} className="inline-flex items-center gap-2 text-mink/70 hover:text-rose-dark text-xs font-bold uppercase tracking-wider mb-8 transition-colors">
           <FaChevronLeft className="text-xs" /> Voltar para o Agendamento
         </Link>
 
