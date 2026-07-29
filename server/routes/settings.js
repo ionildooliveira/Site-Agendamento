@@ -9,7 +9,20 @@ router.get('/', setTenantId, async (req, res) => {
   const supabase = getDB();
   const { data: settings } = await supabase.from('settings').select('*').eq('company_id', req.tenantId).single();
   
-  if (!settings) return res.status(404).json({ error: 'Configurações não encontradas' });
+  if (!settings) {
+    return res.json({
+      working_hours: {
+        "0": null,
+        "1": { "open": "09:00", "close": "19:00" },
+        "2": { "open": "09:00", "close": "19:00" },
+        "3": { "open": "09:00", "close": "19:00" },
+        "4": { "open": "09:00", "close": "19:00" },
+        "5": { "open": "09:00", "close": "19:00" },
+        "6": { "open": "09:00", "close": "17:00" }
+      },
+      slot_interval: 30
+    });
+  }
   
   res.json({
     ...settings,
@@ -22,12 +35,24 @@ router.put('/', authenticateAdmin, setTenantId, async (req, res) => {
   const { working_hours, slot_interval } = req.body;
   const supabase = getDB();
   
-  await supabase.from('settings')
-    .update({ 
-      working_hours: working_hours, // Supabase handles JSONB
-      slot_interval: slot_interval || 30 
-    })
-    .eq('company_id', req.tenantId);
+  const { data: existing } = await supabase.from('settings').select('id').eq('company_id', req.tenantId).single();
+  
+  if (existing) {
+    await supabase.from('settings')
+      .update({ 
+        working_hours: working_hours, // Supabase handles JSONB
+        slot_interval: slot_interval || 30 
+      })
+      .eq('company_id', req.tenantId);
+  } else {
+    await supabase.from('settings')
+      .insert({
+        id: Date.now(),
+        company_id: req.tenantId,
+        working_hours: working_hours,
+        slot_interval: slot_interval || 30
+      });
+  }
     
   res.json({ success: true });
 });
@@ -48,9 +73,20 @@ router.put('/salon-data', authenticateAdmin, setTenantId, async (req, res) => {
   const { salonData } = req.body;
   const supabase = getDB();
   
-  await supabase.from('settings')
-    .update({ salon_data: salonData })
-    .eq('company_id', req.tenantId);
+  const { data: existing } = await supabase.from('settings').select('id').eq('company_id', req.tenantId).single();
+  
+  if (existing) {
+    await supabase.from('settings')
+      .update({ salon_data: salonData })
+      .eq('company_id', req.tenantId);
+  } else {
+    await supabase.from('settings')
+      .insert({
+        id: Date.now(),
+        company_id: req.tenantId,
+        salon_data: salonData
+      });
+  }
     
   res.json({ success: true });
 });

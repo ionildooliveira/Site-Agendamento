@@ -14,7 +14,7 @@ export default function TenantLayout() {
       try {
         setLoading(true);
         const company = await companiesAPI.getBySlug(companySlug);
-        setTenantId(company.id);
+        setTenantId(company.id, companySlug);
         
         await syncSalonSettings();
         
@@ -23,7 +23,7 @@ export default function TenantLayout() {
       } catch (error) {
         console.error('Error fetching tenant:', error);
         toast.error('Empresa não encontrada.');
-        navigate('/not-found'); // We should create a NotFound page, or redirect to generic page
+        navigate('/');
       } finally {
         setLoading(false);
       }

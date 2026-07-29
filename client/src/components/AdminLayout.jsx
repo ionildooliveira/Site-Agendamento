@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { getSalonSettings } from '../services/salonSettings';
 import { 
   FaChartPie, FaCalendarAlt, FaCut, FaUsers, 
@@ -9,8 +9,9 @@ import {
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { companySlug } = useParams();
   const [adminName] = useState(() => {
-    const adminData = localStorage.getItem('studio_beauty_admin');
+    const adminData = localStorage.getItem(`studio_beauty_admin_${companySlug}`);
     if (adminData) {
       try {
         const admin = JSON.parse(adminData);
@@ -30,31 +31,29 @@ export default function AdminLayout() {
     return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('studio_beauty_token');
-    if (!token) {
-      navigate('/login');
-    }
-  }, [navigate]);
+  const token = localStorage.getItem(`studio_beauty_token_${companySlug}`);
+  if (!token) {
+    return <Navigate to={`/${companySlug}/admin/login`} replace />;
+  }
 
   const handleLogout = () => {
-    localStorage.removeItem('studio_beauty_token');
-    localStorage.removeItem('studio_beauty_admin');
-    navigate('/login');
+    localStorage.removeItem(`studio_beauty_token_${companySlug}`);
+    localStorage.removeItem(`studio_beauty_admin_${companySlug}`);
+    navigate(`/${companySlug}/admin/login`);
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/admin', icon: <FaChartPie /> },
-    { label: 'Agenda', path: '/admin/agenda', icon: <FaCalendarAlt /> },
-    { label: 'Serviços', path: '/admin/servicos', icon: <FaCut /> },
-    { label: 'Profissionais', path: '/admin/profissionais', icon: <FaUserTie /> },
-    { label: 'Clientes', path: '/admin/clientes', icon: <FaUsers /> },
-    { label: 'Configurações', path: '/admin/configuracoes', icon: <FaCog /> },
+    { label: 'Dashboard', path: `/${companySlug}/admin`, icon: <FaChartPie /> },
+    { label: 'Agenda', path: `/${companySlug}/admin/agenda`, icon: <FaCalendarAlt /> },
+    { label: 'Serviços', path: `/${companySlug}/admin/servicos`, icon: <FaCut /> },
+    { label: 'Profissionais', path: `/${companySlug}/admin/profissionais`, icon: <FaUserTie /> },
+    { label: 'Clientes', path: `/${companySlug}/admin/clientes`, icon: <FaUsers /> },
+    { label: 'Configurações', path: `/${companySlug}/admin/configuracoes`, icon: <FaCog /> },
   ];
 
   const isActive = (path) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin' || location.pathname === '/admin/';
+    if (path === `/${companySlug}/admin`) {
+      return location.pathname === `/${companySlug}/admin` || location.pathname === `/${companySlug}/admin/`;
     }
     return location.pathname.startsWith(path);
   };

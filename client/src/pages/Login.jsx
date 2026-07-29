@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { FaLock, FaEnvelope, FaChevronLeft } from 'react-icons/fa';
@@ -7,16 +7,22 @@ import { getSalonSettings } from '../services/salonSettings';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { companySlug } = useParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [salon, setSalon] = useState(getSalonSettings());
 
   useEffect(() => {
+    const token = localStorage.getItem(`studio_beauty_token_${companySlug}`);
+    if (token) {
+      navigate(`/${companySlug}/admin`);
+    }
+
     const updateSalon = () => setSalon(getSalonSettings());
     window.addEventListener('salonSettingsUpdated', updateSalon);
     return () => window.removeEventListener('salonSettingsUpdated', updateSalon);
-  }, []);
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -29,12 +35,12 @@ export default function Login() {
       setLoading(true);
       const res = await authAPI.login(email, password);
       
-      // Save token and admin info
-      localStorage.setItem('studio_beauty_token', res.token);
-      localStorage.setItem('studio_beauty_admin', JSON.stringify(res.admin));
+      // Save token and admin info per company
+      localStorage.setItem(`studio_beauty_token_${companySlug}`, res.token);
+      localStorage.setItem(`studio_beauty_admin_${companySlug}`, JSON.stringify(res.admin));
       
       toast.success(`Bem-vindo(a), ${res.admin.name}!`);
-      navigate('/admin');
+      navigate(`/${companySlug}/admin`);
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Erro ao realizar login. Verifique suas credenciais.';

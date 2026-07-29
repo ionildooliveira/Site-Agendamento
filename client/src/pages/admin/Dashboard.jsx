@@ -4,10 +4,11 @@ import { toast } from 'react-hot-toast';
 import { FaCalendarCheck, FaCalendarDay, FaCoins, FaUserFriends, 
   FaRegClock, FaChevronRight, FaStar 
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getSalonSettings } from '../../services/salonSettings';
 
 export default function AdminDashboard() {
+  const { companySlug } = useParams();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     kpi: {
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-bold text-mink flex items-center gap-2">
               <FaCalendarDay className="text-rose-dark" /> Agenda de Hoje ({todaySchedule.length})
             </h2>
-            <Link to="/admin/agenda" className="text-xs text-rose-dark font-bold hover:underline flex items-center gap-1">
+            <Link to={`/${companySlug}/admin/agenda`} className="text-xs text-rose-dark font-bold hover:underline flex items-center gap-1">
               Ver agenda completa <FaChevronRight />
             </Link>
           </div>

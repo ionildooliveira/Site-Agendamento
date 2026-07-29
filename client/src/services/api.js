@@ -10,17 +10,34 @@ const api = axios.create({
 });
 
 let currentTenantId = null;
+let currentTenantSlug = null;
 
-export const setTenantId = (id) => {
+export const setTenantId = (id, slug) => {
   currentTenantId = id;
+  currentTenantSlug = slug;
 };
 
 export const getCurrentTenantId = () => currentTenantId;
+export const getCurrentTenantSlug = () => currentTenantSlug;
 
 // Interceptor to inject JWT token and Tenant ID
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('studio_beauty_token');
+    let slug = currentTenantSlug;
+    if (!slug) {
+       // fallback if slug not set but we have admin data
+       const adminData = localStorage.getItem('studio_beauty_admin');
+       if (adminData) {
+         try {
+            const admin = JSON.parse(adminData);
+            if (admin.company_slug) slug = admin.company_slug;
+         } catch(e){}
+       }
+    }
+    
+    // Use the slug to get the correct token
+    const token = slug ? localStorage.getItem(`studio_beauty_token_${slug}`) : null;
+    
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -54,10 +71,13 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       // Check if it's admin endpoint before clearing and redirecting
-      if (window.location.pathname.startsWith('/admin')) {
-        localStorage.removeItem('studio_beauty_token');
-        localStorage.removeItem('studio_beauty_admin');
-        window.location.href = '/login';
+      if (window.location.pathname.includes('/admin')) {
+        const slug = currentTenantSlug;
+        if (slug) {
+          localStorage.removeItem(`studio_beauty_token_${slug}`);
+          localStorage.removeItem(`studio_beauty_admin_${slug}`);
+          window.location.href = `/${slug}/admin/login`;
+        }
       }
     }
     return Promise.reject(error);

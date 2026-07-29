@@ -57,10 +57,12 @@ router.post('/create', authenticateSuperAdmin, async (req, res) => {
     }
 
     // 3. Default settings
+    const newSettingsId = Date.now();
     const { error: settingsError } = await supabase
       .from('settings')
       .insert([
         {
+          id: newSettingsId,
           company_id: company.id,
           slot_interval: 30,
           working_hours: {

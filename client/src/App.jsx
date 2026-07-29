@@ -42,27 +42,24 @@ export default function App() {
       />
 
       <Routes>
-        {/* Public Client Routes */}
+        {/* Public Client & Admin Routes scoped by Tenant */}
         <Route path="/:companySlug" element={<TenantLayout />}>
+          {/* Public Routes */}
           <Route index element={<LandingPage />} />
           <Route path="servicos" element={<ServicesCatalog />} />
           <Route path="agendar" element={<BookingWizard />} />
           <Route path="meus-agendamentos" element={<MyBookings />} />
-        </Route>
 
-        {/* Admin Authentication routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin/login" element={<Login />} />
-
-        {/* Protected Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<Navigate to="/admin" replace />} />
-          <Route path="agenda" element={<AdminAgenda />} />
-          <Route path="servicos" element={<AdminServices />} />
-          <Route path="profissionais" element={<AdminProfessionals />} />
-          <Route path="clientes" element={<AdminClients />} />
-          <Route path="configuracoes" element={<AdminSettings />} />
+          {/* Admin Routes */}
+          <Route path="admin/login" element={<Login />} />
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="agenda" element={<AdminAgenda />} />
+            <Route path="servicos" element={<AdminServices />} />
+            <Route path="profissionais" element={<AdminProfessionals />} />
+            <Route path="clientes" element={<AdminClients />} />
+            <Route path="configuracoes" element={<AdminSettings />} />
+          </Route>
         </Route>
 
         {/* Super Admin Routes */}

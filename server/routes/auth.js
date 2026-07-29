@@ -23,6 +23,11 @@ const loginHandler = async (req, res) => {
     return res.status(401).json({ error: 'E-mail ou senha incorretos' });
   }
 
+  const requestedTenantId = req.headers['x-tenant-id'];
+  if (requestedTenantId && String(admin.company_id) !== String(requestedTenantId)) {
+    return res.status(403).json({ error: 'Este usuário não pertence a esta empresa.' });
+  }
+
   const token = jwt.sign(
     { id: admin.id, email: admin.email, name: admin.name, company_id: admin.company_id },
     JWT_SECRET,
