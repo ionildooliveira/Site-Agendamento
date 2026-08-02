@@ -70,7 +70,8 @@ router.get('/', setTenantId, async (req, res) => {
     if (!service) return res.status(404).json({ error: 'Serviço não encontrado' });
 
     const duration = service.duration_minutes;
-    const slotInterval = settings?.slot_interval || 30;
+    // O intervalo entre os horários agora é dinâmico, baseado na duração do serviço
+    const slotInterval = duration;
     
     if (!dayHours.open || !dayHours.close) {
       return res.json({ slots: [], message: 'Horário de funcionamento inválido para este dia' });
