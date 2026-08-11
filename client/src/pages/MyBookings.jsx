@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { bookingsAPI, availabilityAPI } from '../services/api';
+import { bookingsAPI, availabilityAPI, testimonialsAPI } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { 
   FaCalendarAlt, FaClock, FaEnvelope, FaSearch, 
-  FaCalendarTimes, FaHistory 
+  FaCalendarTimes, FaHistory, FaStar
 } from 'react-icons/fa';
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
@@ -23,6 +23,11 @@ export default function MyBookings() {
   const [slots, setSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState('');
   const [availabilityMsg, setAvailabilityMsg] = useState('');
+
+  // Review states
+  const [reviewBooking, setReviewBooking] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -128,6 +133,34 @@ export default function MyBookings() {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Erro ao reagendar';
       toast.error(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!comment) {
+      toast.error('Por favor, escreva um depoimento.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await testimonialsAPI.create({
+        bookingId: reviewBooking.id,
+        clientId: reviewBooking.client_id, // Need to make sure client_id is in the booking object
+        rating,
+        comment
+      });
+      
+      toast.success('Depoimento enviado com sucesso! Será analisado pela equipe.');
+      setReviewBooking(null);
+      setRating(5);
+      setComment('');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao enviar depoimento.');
     } finally {
       setLoading(false);
     }
@@ -258,6 +291,18 @@ export default function MyBookings() {
                           </button>
                         </div>
                       )}
+                      
+                      {/* Client actions (Past) */}
+                      {isPast && (
+                        <div className="flex gap-2.5 w-full md:w-auto mt-2 md:mt-0">
+                          <button 
+                            onClick={() => setReviewBooking(booking)}
+                            className="btn-outline border-[#D47FA6] text-[#D47FA6] hover:bg-[#D47FA6] hover:text-white text-xs px-5 py-2.5 rounded-full flex-1 md:flex-none justify-center cursor-pointer"
+                          >
+                            Deixar Depoimento
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -336,6 +381,72 @@ export default function MyBookings() {
                   Confirmar Reagendamento
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* REVIEW MODAL */}
+        {reviewBooking && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-glass border border-rose-light/20 max-w-xl w-full p-8 animate-fade-in">
+              <div className="flex justify-between items-center border-b border-rose-light/20 pb-4 mb-5">
+                <h3 className="text-lg font-heading font-bold text-gray-900">Avaliar Atendimento</h3>
+                <button 
+                  onClick={() => setReviewBooking(null)}
+                  className="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="mb-6 bg-blush/35 p-5 rounded-2xl text-xs text-mink border border-rose-light/20 shadow-sm relative overflow-hidden">
+                <p className="font-bold text-[10px] text-rose-dark uppercase tracking-wider mb-2">Detalhes do Serviço</p>
+                <p className="font-medium">Serviço: <span className="text-gray-900 font-semibold">{reviewBooking.service_name}</span></p>
+                <p className="font-medium mt-0.5">Profissional: <span className="text-gray-900 font-semibold">{reviewBooking.professional_name}</span></p>
+              </div>
+
+              <form onSubmit={handleSubmitReview}>
+                <div className="mb-4">
+                  <label className="label mb-2 block">Sua Avaliação</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FaStar 
+                        key={star} 
+                        className={`text-2xl cursor-pointer transition-colors ${star <= rating ? 'text-amber-400' : 'text-gray-200'}`}
+                        onClick={() => setRating(star)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="label">Seu Depoimento</label>
+                  <textarea 
+                    rows="4"
+                    className="input text-xs resize-none"
+                    placeholder="Conte-nos como foi sua experiência..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-8">
+                  <button 
+                    type="button" 
+                    onClick={() => setReviewBooking(null)}
+                    className="btn-outline text-xs px-5 py-2.5 cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="btn-primary text-xs px-6 py-2.5 cursor-pointer"
+                  >
+                    Enviar Depoimento
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

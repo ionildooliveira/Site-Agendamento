@@ -10,13 +10,14 @@ import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
 import { getSalonSettings } from '../services/salonSettings';
-import { servicesAPI } from '../services/api';
+import { servicesAPI, testimonialsAPI } from '../services/api';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { companySlug } = useParams();
   const [salon, setSalon] = useState(getSalonSettings());
   const [services, setServices] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,35 +41,17 @@ export default function LandingPage() {
     fetchServices();
   }, []);
 
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Juliana Sampaio',
-      role: 'Cliente Assídua',
-      comment: 'O agendamento online em segundos mudou minha rotina! Além disso, a equipe do Studio Beauty é impecável, meu cabelo nunca esteve tão saudável.',
-      stars: 5,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-      service: 'Coloração & Hidratação'
-    },
-    {
-      id: 2,
-      name: 'Mariana Fontes',
-      role: 'Empresária',
-      comment: 'Atendimento pontual, ambiente sofisticado e produtos de altíssima qualidade. O Studio Beauty é meu refúgio semanal para autocuidado.',
-      stars: 5,
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
-      service: 'Manicure & Escova'
-    },
-    {
-      id: 3,
-      name: 'Camila Rocha',
-      role: 'Arquiteta',
-      comment: 'Amei o resultado do meu corte e a atenção aos detalhes. Poder agendar 24 horas por dia pelo site facilita demais minha vida corrida!',
-      stars: 5,
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
-      service: 'Corte Feminino'
+  useEffect(() => {
+    async function fetchTestimonials() {
+      try {
+        const data = await testimonialsAPI.getAll();
+        setTestimonials(data || []);
+      } catch (err) {
+        console.error(err);
+      }
     }
-  ];
+    fetchTestimonials();
+  }, []);
 
   const featuredServices = services.slice(0, 6);
 
@@ -257,8 +240,9 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-b from-[#FFF8FA] to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {testimonials.length > 0 && (
+        <section className="py-20 bg-gradient-to-b from-[#FFF8FA] to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-xs font-semibold uppercase tracking-widest text-[#D47FA6] bg-[#FDF2F7] px-3 py-1 rounded-full">
               Depoimentos Reais
@@ -279,7 +263,7 @@ export default function LandingPage() {
               >
                 <div>
                   <div className="flex items-center gap-1 text-amber-400 mb-4">
-                    {[...Array(t.stars)].map((_, idx) => (
+                    {[...Array(t.rating)].map((_, idx) => (
                       <FaStar key={idx} />
                     ))}
                   </div>
@@ -290,16 +274,18 @@ export default function LandingPage() {
 
                 <div className="mt-6 pt-4 border-t border-gray-100 flex items-center gap-3">
                   <img
-                    src={t.avatar}
-                    alt={t.name}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.client?.name || 'Cliente')}&background=F5D8E3&color=D47FA6`}
+                    alt={t.client?.name || 'Cliente'}
                     className="w-12 h-12 rounded-full object-cover border-2 border-[#D47FA6]"
                   />
                   <div>
-                    <h4 className="font-bold text-sm text-[#4A323D]">{t.name}</h4>
-                    <span className="text-xs text-gray-500 block">{t.role}</span>
-                    <span className="text-[11px] text-[#D47FA6] font-medium block mt-0.5">
-                      {t.service}
-                    </span>
+                    <h4 className="font-bold text-sm text-[#4A323D]">{t.client?.name || 'Cliente'}</h4>
+                    <span className="text-xs text-gray-500 block">Cliente</span>
+                    {t.service_name && (
+                      <span className="text-[11px] text-[#D47FA6] font-medium block mt-0.5">
+                        {t.service_name}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -307,6 +293,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Contact & Map Section */}
       <section className="py-20 bg-white border-t border-[#F5D8E3]/50">
