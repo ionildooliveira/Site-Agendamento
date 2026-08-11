@@ -53,6 +53,10 @@ export default function LandingPage() {
     fetchTestimonials();
   }, []);
 
+  const averageRating = testimonials.length > 0 
+    ? (testimonials.reduce((acc, t) => acc + Number(t.rating), 0) / testimonials.length).toFixed(1) 
+    : '5.0';
+
   const featuredServices = services.slice(0, 6);
 
   const cleanPhone = (salon.whatsapp || '5511999998888').replace(/\D/g, '');
@@ -147,7 +151,7 @@ export default function LandingPage() {
                 <p className="text-xs text-gray-300">Agendamento Online</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">4.9 ★</p>
+                <p className="text-2xl font-bold text-white">{averageRating} ★</p>
                 <p className="text-xs text-gray-300">Avaliação das Clientes</p>
               </div>
               <div>
