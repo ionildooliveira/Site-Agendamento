@@ -16,7 +16,7 @@ function toTime(m) {
   return `${Math.floor(m / 60).toString().padStart(2, '0')}:${(m % 60).toString().padStart(2, '0')}`;
 }
 
-const BOOKING_SELECT = `*, clients(*), professionals(*), services(*)`;
+const BOOKING_SELECT = `*, clients(*), professionals(*), services(*), testimonials(id)`;
 
 // ── POST /api/bookings  (public) ──────────────────────────────────────────────
 router.post('/', setTenantId, async (req, res) => {

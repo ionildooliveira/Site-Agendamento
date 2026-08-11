@@ -158,6 +158,10 @@ export default function MyBookings() {
       setReviewBooking(null);
       setRating(5);
       setComment('');
+      
+      // Atualizar lista para esconder o botão imediatamente
+      const updated = await bookingsAPI.getByEmail(email);
+      setBookings(updated || []);
     } catch (err) {
       console.error(err);
       toast.error('Erro ao enviar depoimento.');
@@ -293,7 +297,7 @@ export default function MyBookings() {
                       )}
                       
                       {/* Client actions (Past) */}
-                      {isPast && (
+                      {isPast && !(booking.testimonials && booking.testimonials.length > 0) && (
                         <div className="flex gap-2.5 w-full md:w-auto mt-2 md:mt-0">
                           <button 
                             onClick={() => setReviewBooking(booking)}
@@ -301,6 +305,13 @@ export default function MyBookings() {
                           >
                             Deixar Depoimento
                           </button>
+                        </div>
+                      )}
+                      {isPast && booking.testimonials && booking.testimonials.length > 0 && (
+                        <div className="flex gap-2.5 w-full md:w-auto mt-2 md:mt-0">
+                           <span className="text-xs text-green-600 font-medium bg-green-50 px-4 py-2 rounded-full flex-1 md:flex-none text-center">
+                             Depoimento Enviado
+                           </span>
                         </div>
                       )}
                     </div>
