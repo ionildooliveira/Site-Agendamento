@@ -30,10 +30,8 @@ export default function AdminTestimonials() {
       await testimonialsAPI.updateStatus(id, status);
       toast.success('Status atualizado com sucesso!');
       
-      // Update locally
-      setTestimonials(testimonials.map(t => 
-        t.id === id ? { ...t, status } : t
-      ));
+      // Update locally by refetching to ensure consistent data
+      fetchTestimonials();
     } catch (err) {
       console.error(err);
       toast.error('Erro ao atualizar status');
@@ -117,7 +115,7 @@ export default function AdminTestimonials() {
                 </div>
 
                 <div className="flex items-center gap-1 text-amber-400 mb-3">
-                  {[...Array(t.rating)].map((_, idx) => (
+                  {Array.from({ length: Number(t.rating) || 5 }).map((_, idx) => (
                     <FaStar key={idx} className="text-sm" />
                   ))}
                 </div>
