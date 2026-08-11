@@ -20,6 +20,7 @@ import AdminAgenda from './pages/admin/Agenda';
 import AdminServices from './pages/admin/Services';
 import AdminProfessionals from './pages/admin/Professionals';
 import AdminClients from './pages/admin/Clients';
+import AdminTestimonials from './pages/admin/Testimonials';
 import AdminSettings from './pages/admin/Settings';
 
 export default function App() {
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="servicos" element={<AdminServices />} />
             <Route path="profissionais" element={<AdminProfessionals />} />
             <Route path="clientes" element={<AdminClients />} />
+            <Route path="depoimentos" element={<AdminTestimonials />} />
             <Route path="configuracoes" element={<AdminSettings />} />
           </Route>
         </Route>

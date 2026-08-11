@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation, Navigate, useParams } from 'rea
 import { getSalonSettings } from '../services/salonSettings';
 import { 
   FaChartPie, FaCalendarAlt, FaCut, FaUsers, 
-  FaCog, FaSignOutAlt, FaBars, FaTimes, FaUserTie 
+  FaCog, FaSignOutAlt, FaBars, FaTimes, FaUserTie, FaStar
 } from 'react-icons/fa';
 
 export default function AdminLayout() {
@@ -48,6 +48,7 @@ export default function AdminLayout() {
     { label: 'Serviços', path: `/${companySlug}/admin/servicos`, icon: <FaCut /> },
     { label: 'Profissionais', path: `/${companySlug}/admin/profissionais`, icon: <FaUserTie /> },
     { label: 'Clientes', path: `/${companySlug}/admin/clientes`, icon: <FaUsers /> },
+    { label: 'Depoimentos', path: `/${companySlug}/admin/depoimentos`, icon: <FaStar /> },
     { label: 'Configurações', path: `/${companySlug}/admin/configuracoes`, icon: <FaCog /> },
   ];
 

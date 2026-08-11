@@ -246,6 +246,14 @@ export const testimonialsAPI = {
   create: async (data) => {
     const response = await api.post('/testimonials', data);
     return response.data;
+  },
+  getAdminAll: async () => {
+    const response = await api.get('/testimonials/admin/all');
+    return response.data;
+  },
+  updateStatus: async (id, status) => {
+    const response = await api.patch(`/testimonials/${id}/status`, { status });
+    return response.data;
   }
 };
 
