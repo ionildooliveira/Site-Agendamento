@@ -133,10 +133,10 @@ export default function PublicFooter() {
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
+        <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4 text-center sm:text-left">
           <p>© {new Date().getFullYear()} {salon.name}. Todos os direitos reservados.</p>
-          <p className="flex items-center gap-1">
-            Desenvolvido com <FaHeart className="text-[#D47FA6]" /> para salões de beleza de alta performance
+          <p className="sm:text-right leading-relaxed">
+            Desenvolvido com <FaHeart className="text-[#D47FA6] inline-block align-baseline mx-0.5" /> para salões de beleza de alta performance
           </p>
         </div>
       </div>
