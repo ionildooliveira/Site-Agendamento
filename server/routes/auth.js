@@ -15,7 +15,7 @@ const loginHandler = async (req, res) => {
   const supabase = getDB();
   const { data: admin, error } = await supabase
     .from('admin_users')
-    .select('*')
+    .select('*, companies(is_active)')
     .eq('email', email.toLowerCase().trim())
     .single();
 
@@ -26,6 +26,11 @@ const loginHandler = async (req, res) => {
   const requestedTenantId = req.headers['x-tenant-id'];
   if (requestedTenantId && String(admin.company_id) !== String(requestedTenantId)) {
     return res.status(403).json({ error: 'Este usuário não pertence a esta empresa.' });
+  }
+
+  // Check if company is active
+  if (admin.companies && admin.companies.is_active === false) {
+    return res.status(403).json({ error: 'Acesso negado. Esta empresa está temporariamente bloqueada.' });
   }
 
   const token = jwt.sign(

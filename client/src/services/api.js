@@ -235,6 +235,30 @@ export const superAdminAPI = {
       headers: { 'X-Super-Admin-Password': password }
     });
     return response;
+  },
+  getAllCompanies: async (password) => {
+    const response = await api.get('/companies', {
+      headers: { 'X-Super-Admin-Password': password }
+    });
+    return response.data;
+  },
+  updateCompany: async (id, data, password) => {
+    const response = await api.put(`/companies/${id}`, data, {
+      headers: { 'X-Super-Admin-Password': password }
+    });
+    return response.data;
+  },
+  updateCompanyStatus: async (id, is_active, password) => {
+    const response = await api.patch(`/companies/${id}/status`, { is_active }, {
+      headers: { 'X-Super-Admin-Password': password }
+    });
+    return response.data;
+  },
+  deleteCompany: async (id, password) => {
+    const response = await api.delete(`/companies/${id}`, {
+      headers: { 'X-Super-Admin-Password': password }
+    });
+    return response.data;
   }
 };
 

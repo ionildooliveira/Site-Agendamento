@@ -3,11 +3,13 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { companiesAPI, setTenantId } from '../services/api';
 import { syncSalonSettings } from '../services/salonSettings';
 import toast from 'react-hot-toast';
+import BlockedCompany from '../pages/BlockedCompany';
 
 export default function TenantLayout() {
   const { companySlug } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     async function fetchTenant() {
@@ -22,8 +24,12 @@ export default function TenantLayout() {
         document.title = company.name;
       } catch (error) {
         console.error('Error fetching tenant:', error);
-        toast.error('Empresa não encontrada.');
-        navigate('/');
+        if (error.response?.status === 403 || error.response?.data?.blocked) {
+          setIsBlocked(true);
+        } else {
+          toast.error('Empresa não encontrada.');
+          navigate('/');
+        }
       } finally {
         setLoading(false);
       }
@@ -42,6 +48,10 @@ export default function TenantLayout() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  if (isBlocked) {
+    return <BlockedCompany />;
   }
 
   return <Outlet />;

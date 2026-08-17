@@ -112,7 +112,7 @@ router.get('/:slug', async (req, res) => {
 
   const { data: company, error } = await supabase
     .from('companies')
-    .select('id, name, slug')
+    .select('id, name, slug, is_active')
     .eq('slug', slug)
     .single();
 
@@ -120,7 +120,83 @@ router.get('/:slug', async (req, res) => {
     return res.status(404).json({ error: 'Empresa não encontrada.' });
   }
 
+  if (company.is_active === false) {
+    return res.status(403).json({ error: 'Esta empresa está temporariamente bloqueada.', blocked: true });
+  }
+
   res.json(company);
+});
+
+// GET all companies (Protected by Super Admin Password)
+router.get('/', authenticateSuperAdmin, async (req, res) => {
+  const supabase = getDB();
+  const { data: companies, error } = await supabase
+    .from('companies')
+    .select('id, name, slug, created_at, is_active')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: 'Erro ao buscar empresas.' });
+  }
+
+  res.json(companies);
+});
+
+// PUT update company (Protected)
+router.put('/:id', authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, slug } = req.body;
+  const supabase = getDB();
+
+  if (!name || !slug) return res.status(400).json({ error: 'Nome e slug são obrigatórios.' });
+
+  const { data, error } = await supabase
+    .from('companies')
+    .update({ name, slug })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Esse link/slug já está em uso.' });
+    }
+    return res.status(500).json({ error: 'Erro ao atualizar empresa.' });
+  }
+  
+  res.json({ success: true, company: data });
+});
+
+// PATCH update company status (Protected)
+router.patch('/:id/status', authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { is_active } = req.body;
+  const supabase = getDB();
+
+  const { data, error } = await supabase
+    .from('companies')
+    .update({ is_active })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: 'Erro ao atualizar status.' });
+  res.json({ success: true, company: data });
+});
+
+// DELETE company (Protected)
+router.delete('/:id', authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const supabase = getDB();
+
+  const { error } = await supabase
+    .from('companies')
+    .delete()
+    .eq('id', id);
+
+  if (error) return res.status(500).json({ error: 'Erro ao deletar empresa. Certifique-se de que não existem dados dependentes sem CASCADE.' });
+  
+  res.json({ success: true });
 });
 
 module.exports = router;
