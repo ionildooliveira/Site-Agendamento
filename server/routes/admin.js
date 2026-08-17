@@ -10,8 +10,12 @@ router.get('/dashboard', authenticateAdmin, setTenantId, async (req, res) => {
 
   const today = new Date().toISOString().split('T')[0];
   const dateObj = new Date();
-  const startOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1).toISOString().split('T')[0];
-  const endOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).toISOString().split('T')[0];
+  
+  const year = req.query.year ? parseInt(req.query.year) : dateObj.getFullYear();
+  const month = req.query.month ? parseInt(req.query.month) - 1 : dateObj.getMonth();
+
+  const startOfMonth = new Date(year, month, 1).toISOString().split('T')[0];
+  const endOfMonth = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
   try {
     // Total bookings (all time)

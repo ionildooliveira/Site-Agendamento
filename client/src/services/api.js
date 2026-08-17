@@ -173,8 +173,8 @@ export const bookingsAPI = {
 };
 
 export const adminAPI = {
-  getDashboard: async () => {
-    const response = await api.get('/admin/dashboard');
+  getDashboard: async (month, year) => {
+    const response = await api.get('/admin/dashboard', { params: { month, year } });
     return response.data;
   },
   getSchedule: async (view, date) => {

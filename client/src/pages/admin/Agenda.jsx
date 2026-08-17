@@ -32,38 +32,31 @@ export default function AdminAgenda() {
   }, []);
 
   // Fetch agenda bookings for manual refresh
-  const fetchAgenda = async () => {
+  const fetchAgenda = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await adminAPI.getSchedule(view, currentDate);
       setBookings(res.bookings || []);
       setStartDateStr(res.startDate || '');
       setEndDateStr(res.endDate || '');
     } catch (err) {
       console.error(err);
-      toast.error('Erro ao buscar a agenda');
+      if (!silent) toast.error('Erro ao buscar a agenda');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    async function loadSchedule() {
-      try {
-        const res = await adminAPI.getSchedule(view, currentDate);
-        setBookings(res.bookings || []);
-        setStartDateStr(res.startDate || '');
-        setEndDateStr(res.endDate || '');
-      } catch (err) {
-        console.error(err);
-        toast.error('Erro ao buscar a agenda');
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadSchedule();
-  }, [view, currentDate]);
+    fetchAgenda();
 
+    // Auto-atualização (Polling a cada 15 segundos)
+    const interval = setInterval(() => {
+      fetchAgenda(true);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [view, currentDate]);
   // Navigate dates
   const handleNavigate = (direction) => {
     const d = new Date(currentDate + 'T00:00:00');

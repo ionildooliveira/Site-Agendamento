@@ -8,19 +8,25 @@ export default function AdminClients() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchClients() {
+    async function fetchClients(silent = false) {
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         const res = await adminAPI.getClients();
         setClients(res);
       } catch (err) {
         console.error(err);
-        toast.error('Erro ao carregar lista de clientes');
+        if (!silent) toast.error('Erro ao carregar lista de clientes');
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     }
     fetchClients();
+
+    const interval = setInterval(() => {
+      fetchClients(true);
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

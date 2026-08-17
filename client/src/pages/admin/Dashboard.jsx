@@ -23,6 +23,10 @@ export default function AdminDashboard() {
     upcomingBookings: []
   });
   const [salon, setSalon] = useState(getSalonSettings());
+  
+  const currentDate = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
   useEffect(() => {
     const updateSalon = () => setSalon(getSalonSettings());
@@ -31,20 +35,27 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    async function loadDashboard() {
+    async function loadDashboard(silent = false) {
       try {
-        setLoading(true);
-        const res = await adminAPI.getDashboard();
+        if (!silent) setLoading(true);
+        const res = await adminAPI.getDashboard(selectedMonth, selectedYear);
         setData(res);
       } catch (err) {
         console.error(err);
-        toast.error('Erro ao carregar os dados do painel');
+        if (!silent) toast.error('Erro ao carregar os dados do painel');
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     }
     loadDashboard();
-  }, []);
+
+    // Auto-atualização (Polling a cada 15 segundos)
+    const interval = setInterval(() => {
+      loadDashboard(true);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [selectedMonth, selectedYear]);
 
   if (loading) {
     return (
@@ -68,8 +79,8 @@ export default function AdminDashboard() {
   const kpis = [
     { label: 'Total Geral', val: kpi.totalBookings, desc: 'Agendamentos totais', icon: <FaCalendarCheck />, color: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
     { label: 'Hoje', val: kpi.todayBookings, desc: 'Agendamentos hoje', icon: <FaCalendarDay />, color: 'text-rose-dark bg-blush border-rose-light/20' },
-    { label: 'Agendamentos Mês', val: kpi.monthBookings, desc: 'Este mês corrente', icon: <FaRegClock />, color: 'text-amber-600 bg-amber-50 border-amber-100' },
-    { label: 'Faturamento Mês', val: `R$ ${Number(kpi.monthRevenue).toFixed(2)}`, desc: 'Estimado confirmado', icon: <FaCoins />, color: 'text-green-600 bg-green-50 border-green-100' },
+    { label: 'Agendamentos Mês', val: kpi.monthBookings, desc: 'Mês selecionado', icon: <FaRegClock />, color: 'text-amber-600 bg-amber-50 border-amber-100' },
+    { label: 'Faturamento Mês', val: `R$ ${Number(kpi.monthRevenue).toFixed(2)}`, desc: 'Mês selecionado', icon: <FaCoins />, color: 'text-green-600 bg-green-50 border-green-100' },
     { label: 'Clientes Recorrentes', val: kpi.recurringClients, desc: 'Fidelizados (2+ vezes)', icon: <FaUserFriends />, color: 'text-gold-dark bg-gold-light/20 border-gold-light/20' },
   ];
 
@@ -77,9 +88,36 @@ export default function AdminDashboard() {
     <div className="animate-fade-in flex flex-col gap-6">
       
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-gray-900">Dashboard</h1>
-        <p className="text-xs text-gray-500">Métricas gerais e agenda do {salon.name || 'Studio Beauty'}.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-gray-900">Dashboard</h1>
+          <p className="text-xs text-gray-500">Métricas gerais e agenda do {salon.name || 'Studio Beauty'}.</p>
+        </div>
+        
+        {/* Filtros de Mês/Ano */}
+        <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
+          <select 
+            value={selectedMonth} 
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="border-none bg-transparent text-sm font-semibold text-gray-700 focus:ring-0 cursor-pointer"
+          >
+            {Array.from({length: 12}, (_, i) => i + 1).map(m => (
+              <option key={m} value={m}>
+                {new Date(2000, m - 1, 1).toLocaleString('pt-BR', { month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
+              </option>
+            ))}
+          </select>
+          <div className="w-px h-4 bg-gray-300"></div>
+          <select 
+            value={selectedYear} 
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="border-none bg-transparent text-sm font-semibold text-gray-700 focus:ring-0 cursor-pointer"
+          >
+            {Array.from({length: 10}, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* KPI Section */}
