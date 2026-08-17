@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { FaWhatsapp, FaMapMarkerAlt, FaClock, FaEnvelope, FaCut, FaHeart } from 'react-icons/fa';
+import { FaWhatsapp, FaMapMarkerAlt, FaClock, FaEnvelope, FaCut } from 'react-icons/fa';
 import { getSalonSettings } from '../services/salonSettings';
 
 export default function PublicFooter() {
@@ -136,9 +136,7 @@ export default function PublicFooter() {
         <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4 text-center sm:text-left">
           <p>© {new Date().getFullYear()} {salon.name}. Todos os direitos reservados.</p>
           <p className="sm:text-right leading-relaxed">
-            <span>Desenvolvido com </span>
-            <FaHeart className="text-[#D47FA6] inline-block -mt-1 mx-0.5" />
-            <span> para salões de beleza de alta performance</span>
+            Desenvolvido com <span className="text-[#D47FA6] text-sm">♥</span> para salões de beleza de alta performance
           </p>
         </div>
       </div>
