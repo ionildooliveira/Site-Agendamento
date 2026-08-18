@@ -1,28 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const { getDB } = require('../database/db');
 const { authenticateAdmin } = require('../middleware/auth');
 const { setTenantId } = require('../middleware/tenant');
 
-// Configurar o multer para armazenar os arquivos na pasta uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
+// Configurar o multer para armazenar os arquivos na memória (necessário para serverless)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // GET /api/gallery
 router.get('/', setTenantId, async (req, res) => {
@@ -50,17 +34,37 @@ router.post('/', authenticateAdmin, setTenantId, upload.single('image'), async (
     }
 
     const { title, description } = req.body;
-    
-    // O backend roda tipicamente na porta 3001, mas vamos armazenar apenas o caminho relativo
-    // para facilitar caso mude de domínio
-    const imageUrl = `/uploads/${req.file.filename}`;
-
     const supabase = getDB();
+    
+    // Gerar nome de arquivo único
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}.${fileExt}`;
+    const filePath = `${req.tenantId}/${fileName}`;
+
+    // Fazer upload para o bucket 'gallery'
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('gallery')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Erro no Supabase Storage:', uploadError);
+      throw uploadError;
+    }
+
+    // Obter URL pública
+    const { data: { publicUrl } } = supabase.storage
+      .from('gallery')
+      .getPublicUrl(filePath);
+
+    // Salvar no banco de dados com a URL completa do Supabase
     const { data, error } = await supabase
       .from('gallery_images')
       .insert({
         company_id: req.tenantId,
-        image_url: imageUrl,
+        image_url: publicUrl,
         title: title || null,
         description: description || null
       })
@@ -93,7 +97,24 @@ router.delete('/:id', authenticateAdmin, setTenantId, async (req, res) => {
       return res.status(404).json({ error: 'Imagem não encontrada' });
     }
 
-    // 2. Deletar do banco de dados
+    // 2. Extrair o caminho do arquivo do Supabase Storage se for uma URL do Supabase
+    if (image.image_url.includes('/storage/v1/object/public/gallery/')) {
+      const filePath = image.image_url.split('/storage/v1/object/public/gallery/')[1];
+      
+      // Deletar do Storage
+      if (filePath) {
+        const { error: storageError } = await supabase.storage
+          .from('gallery')
+          .remove([filePath]);
+          
+        if (storageError) {
+          console.error('Erro ao deletar arquivo do storage:', storageError);
+          // Continua mesmo se falhar no storage, para não deixar dados órfãos no BD
+        }
+      }
+    }
+
+    // 3. Deletar do banco de dados
     const { error: deleteError } = await supabase
       .from('gallery_images')
       .delete()
@@ -101,15 +122,6 @@ router.delete('/:id', authenticateAdmin, setTenantId, async (req, res) => {
       .eq('company_id', req.tenantId);
 
     if (deleteError) throw deleteError;
-
-    // 3. Deletar o arquivo físico localmente
-    if (image.image_url.startsWith('/uploads/')) {
-      const filename = image.image_url.replace('/uploads/', '');
-      const filepath = path.join(__dirname, '../uploads', filename);
-      if (fs.existsSync(filepath)) {
-        fs.unlinkSync(filepath);
-      }
-    }
 
     res.json({ success: true });
   } catch (error) {

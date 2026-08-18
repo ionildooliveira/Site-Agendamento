@@ -9,6 +9,7 @@ const getApiBaseUrl = () => {
 };
 
 const BASE_URL = getApiBaseUrl();
+const getImageUrl = (url) => url.startsWith('http') ? url : `${BASE_URL}${url}`;
 
 export default function GallerySection() {
   const [images, setImages] = useState([]);
@@ -89,7 +90,7 @@ export default function GallerySection() {
               onClick={() => setSelectedImage(img)}
             >
               <img
-                src={`${BASE_URL}${img.image_url}`}
+                src={img.image_url.startsWith('http') ? img.image_url : `${BASE_URL}${img.image_url}`}
                 alt={img.title || 'Galeria Studio Beauty'}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
@@ -137,9 +138,9 @@ export default function GallerySection() {
               onClick={e => e.stopPropagation()}
             >
               <img
-                src={`${BASE_URL}${selectedImage.image_url}`}
+                src={getImageUrl(selectedImage.image_url)}
                 alt={selectedImage.title || 'Foto Ampliada'}
-                className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
               />
               
               {(selectedImage.title || selectedImage.description) && (

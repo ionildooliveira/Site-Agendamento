@@ -209,7 +209,7 @@ export default function AdminGallery() {
                 {images.map((img) => (
                   <div key={img.id} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-200 aspect-square">
                     <img 
-                      src={`${BASE_URL}${img.image_url}`} 
+                      src={img.image_url.startsWith('http') ? img.image_url : `${BASE_URL}${img.image_url}`} 
                       alt={img.title || 'Foto da Galeria'} 
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
