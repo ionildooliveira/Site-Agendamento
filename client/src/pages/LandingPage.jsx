@@ -9,6 +9,7 @@ import {
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
+import GallerySection from '../components/GallerySection';
 import { getSalonSettings } from '../services/salonSettings';
 import { servicesAPI, testimonialsAPI } from '../services/api';
 
@@ -242,6 +243,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Gallery Section */}
+      <GallerySection />
 
       {/* Testimonials Section */}
       {testimonials.length > 0 && (

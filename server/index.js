@@ -14,8 +14,10 @@ const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
 const companiesRoutes = require('./routes/companies');
 const testimonialsRoutes = require('./routes/testimonials');
+const galleryRoutes = require('./routes/gallery');
 const { authenticateAdmin } = require('./middleware/auth');
 const { getDB } = require('./database/db');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +32,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── Database ─────────────────────────────────────────────────────────────────
 // Supabase é inicializado sob demanda, sem necessidade de esquema/seeding síncrono aqui.
@@ -46,6 +49,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/companies', companiesRoutes);
 app.use('/api/testimonials', testimonialsRoutes);
+app.use('/api/gallery', galleryRoutes);
 
 // Direct spec aliases
 app.get('/api/dashboard', authenticateAdmin, (req, res, next) => {

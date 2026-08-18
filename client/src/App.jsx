@@ -21,6 +21,7 @@ import AdminServices from './pages/admin/Services';
 import AdminProfessionals from './pages/admin/Professionals';
 import AdminClients from './pages/admin/Clients';
 import AdminTestimonials from './pages/admin/Testimonials';
+import AdminGallery from './pages/admin/Gallery';
 import AdminSettings from './pages/admin/Settings';
 
 export default function App() {
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="profissionais" element={<AdminProfessionals />} />
             <Route path="clientes" element={<AdminClients />} />
             <Route path="depoimentos" element={<AdminTestimonials />} />
+            <Route path="galeria" element={<AdminGallery />} />
             <Route path="configuracoes" element={<AdminSettings />} />
           </Route>
         </Route>
