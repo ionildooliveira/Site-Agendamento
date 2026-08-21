@@ -18,25 +18,62 @@ router.get('/dashboard', authenticateAdmin, setTenantId, async (req, res) => {
   const endOfMonth = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
   try {
-    // Total bookings (all time)
-    const { count: totalBookings } = await supabase
-      .from('bookings').select('*', { count: 'exact', head: true }).eq('company_id', req.tenantId).neq('status', 'cancelled');
+    // Upcoming bookings (next 7 days) date
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 7);
+    const futureDateStr = futureDate.toISOString().split('T')[0];
 
-    // Today's bookings
-    const { count: todayBookings } = await supabase
-      .from('bookings').select('*', { count: 'exact', head: true })
-      .eq('booking_date', today).eq('company_id', req.tenantId).neq('status', 'cancelled');
+    // Execute all queries concurrently to improve performance
+    const [
+      totalBookingsResult,
+      todayBookingsResult,
+      monthBookingsResult,
+      monthBookingsDataResult,
+      allBookingsResult,
+      todayScheduleResult,
+      upcomingBookingsResult
+    ] = await Promise.all([
+      // Total bookings (all time)
+      supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('company_id', req.tenantId).neq('status', 'cancelled'),
+      // Today's bookings
+      supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('booking_date', today).eq('company_id', req.tenantId).neq('status', 'cancelled'),
+      // This month's bookings
+      supabase.from('bookings').select('*', { count: 'exact', head: true }).gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).eq('company_id', req.tenantId).neq('status', 'cancelled'),
+      // Fetch this month's bookings for revenue and top services
+      supabase.from('bookings').select('service_id, services(name, price)').gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).eq('company_id', req.tenantId).neq('status', 'cancelled'),
+      // Recurring clients
+      supabase.from('bookings').select('client_id').eq('company_id', req.tenantId).neq('status', 'cancelled'),
+      // Today's schedule
+      supabase.from('bookings')
+        .select(`
+          *,
+          clients (name, phone),
+          professionals (name),
+          services (name, duration_minutes, price)
+        `)
+        .eq('booking_date', today).eq('company_id', req.tenantId).neq('status', 'cancelled')
+        .order('start_time', { ascending: true }),
+      // Upcoming bookings (next 7 days)
+      supabase.from('bookings')
+        .select(`
+          *,
+          clients (name),
+          professionals (name),
+          services (name)
+        `)
+        .gte('booking_date', today).lte('booking_date', futureDateStr).eq('company_id', req.tenantId).neq('status', 'cancelled')
+        .order('booking_date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(20)
+    ]);
 
-    // This month's bookings
-    const { count: monthBookings } = await supabase
-      .from('bookings').select('*', { count: 'exact', head: true })
-      .gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).eq('company_id', req.tenantId).neq('status', 'cancelled');
-
-    // Fetch this month's bookings for revenue and top services
-    const { data: monthBookingsData } = await supabase
-      .from('bookings')
-      .select('service_id, services(name, price)')
-      .gte('booking_date', startOfMonth).lte('booking_date', endOfMonth).eq('company_id', req.tenantId).neq('status', 'cancelled');
+    const totalBookings = totalBookingsResult.count;
+    const todayBookings = todayBookingsResult.count;
+    const monthBookings = monthBookingsResult.count;
+    const monthBookingsData = monthBookingsDataResult.data;
+    const allBookings = allBookingsResult.data;
+    const todaySchedule = todayScheduleResult.data;
+    const upcomingBookings = upcomingBookingsResult.data;
 
     let monthRevenue = 0;
     const serviceStats = {};
@@ -56,27 +93,11 @@ router.get('/dashboard', authenticateAdmin, setTenantId, async (req, res) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    // Recurring clients
-    const { data: allBookings } = await supabase
-      .from('bookings').select('client_id').eq('company_id', req.tenantId).neq('status', 'cancelled');
-    
     const clientCounts = {};
     (allBookings || []).forEach(b => {
       clientCounts[b.client_id] = (clientCounts[b.client_id] || 0) + 1;
     });
     const recurringClients = Object.values(clientCounts).filter(c => c >= 2).length;
-
-    // Today's schedule
-    const { data: todaySchedule } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        clients (name, phone),
-        professionals (name),
-        services (name, duration_minutes, price)
-      `)
-      .eq('booking_date', today).eq('company_id', req.tenantId).neq('status', 'cancelled')
-      .order('start_time', { ascending: true });
 
     // Format todaySchedule to match frontend expectations
     const formattedTodaySchedule = (todaySchedule || []).map(b => ({
@@ -88,24 +109,6 @@ router.get('/dashboard', authenticateAdmin, setTenantId, async (req, res) => {
       duration_minutes: b.services?.duration_minutes,
       service_price: b.services?.price
     }));
-
-    // Upcoming bookings (next 7 days)
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 7);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
-
-    const { data: upcomingBookings } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        clients (name),
-        professionals (name),
-        services (name)
-      `)
-      .gte('booking_date', today).lte('booking_date', futureDateStr).eq('company_id', req.tenantId).neq('status', 'cancelled')
-      .order('booking_date', { ascending: true })
-      .order('start_time', { ascending: true })
-      .limit(20);
 
     const formattedUpcoming = (upcomingBookings || []).map(b => ({
       ...b,
