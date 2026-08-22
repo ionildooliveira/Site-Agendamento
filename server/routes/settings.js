@@ -3,6 +3,8 @@ const router = express.Router();
 const { getDB } = require('../database/db');
 const { authenticateAdmin } = require('../middleware/auth');
 const { setTenantId } = require('../middleware/tenant');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // GET /api/settings
 router.get('/', setTenantId, async (req, res) => {
@@ -138,6 +140,42 @@ router.delete('/blocked-dates/:id', authenticateAdmin, setTenantId, async (req, 
   const supabase = getDB();
   await supabase.from('blocked_dates').delete().eq('id', req.params.id).eq('company_id', req.tenantId);
   res.json({ success: true });
+});
+
+// POST /api/settings/upload-cover (admin)
+router.post('/upload-cover', authenticateAdmin, setTenantId, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+    }
+
+    const supabase = getDB();
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `cover-${Date.now()}-${Math.round(Math.random() * 1E9)}.${fileExt}`;
+    const filePath = `${req.tenantId}/${fileName}`;
+
+    // Faz upload para o bucket 'gallery'
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('gallery')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Erro no Supabase Storage (cover):', uploadError);
+      throw uploadError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('gallery')
+      .getPublicUrl(filePath);
+
+    res.json({ url: publicUrl });
+  } catch (error) {
+    console.error('Erro ao fazer upload da capa:', error);
+    res.status(500).json({ error: 'Erro ao fazer upload da imagem de capa' });
+  }
 });
 
 module.exports = router;

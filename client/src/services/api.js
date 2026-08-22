@@ -216,6 +216,12 @@ export const settingsAPI = {
     const response = await api.delete(`/settings/blocked-dates/${id}`);
     return response.data;
   },
+  uploadCover: async (formData) => {
+    const response = await api.post('/settings/upload-cover', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
 };
 
 export const clientsAPI = {

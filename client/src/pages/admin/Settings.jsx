@@ -13,6 +13,7 @@ export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('salon');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   // Tab 1: Salon Identity Settings (localStorage backed + reactive)
   const [salonData, setSalonData] = useState(getSalonSettings());
@@ -107,6 +108,28 @@ export default function AdminSettings() {
       toast.error('Erro ao salvar dados do salão');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploadingCover(true);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await settingsAPI.uploadCover(formData);
+      if (res.url) {
+        setSalonData(prev => ({ ...prev, heroImage: res.url }));
+        toast.success('Imagem de capa enviada com sucesso! Não esqueça de salvar as configurações.');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao enviar imagem de capa.');
+    } finally {
+      setUploadingCover(false);
     }
   };
 
@@ -427,16 +450,49 @@ export default function AdminSettings() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#4A323D] mb-1 flex items-center gap-1.5">
-              <FaImage className="text-[#D47FA6]" /> Imagem de Capa (URL Hero Image)
+            <label className="block text-xs font-bold text-[#4A323D] mb-2 flex items-center gap-1.5">
+              <FaImage className="text-[#D47FA6]" /> Imagem de Capa (Visível em Celular, Tablet e PC)
             </label>
-            <input
-              type="text"
-              required
-              value={salonData.heroImage}
-              onChange={(e) => setSalonData({ ...salonData, heroImage: e.target.value })}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
-            />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              {salonData.heroImage && (
+                <div className="shrink-0">
+                  <img
+                    src={salonData.heroImage}
+                    alt="Capa Atual"
+                    className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl border border-gray-300 shadow-sm"
+                  />
+                </div>
+              )}
+              <div className="flex-1 space-y-3 w-full">
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">
+                    Fazer upload de nova imagem:
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverUpload}
+                    disabled={uploadingCover}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#FDF2F7] file:text-[#D47FA6] hover:file:bg-[#F5D8E3] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  {uploadingCover && <p className="text-xs text-[#D47FA6] mt-1">Enviando...</p>}
+                </div>
+                
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">
+                    Ou URL da Imagem (Avançado):
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={salonData.heroImage || ''}
+                    onChange={(e) => setSalonData({ ...salonData, heroImage: e.target.value })}
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
