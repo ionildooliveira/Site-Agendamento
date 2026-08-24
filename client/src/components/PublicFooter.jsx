@@ -69,7 +69,7 @@ export default function PublicFooter() {
                 <Link to={`/${companySlug}/meus-agendamentos`} className="text-gray-400 hover:text-[#E8A5C8] transition">Meus Agendamentos</Link>
               </li>
               <li>
-                <Link to={`/${companySlug}/admin/login`} className="text-gray-400 hover:text-[#E8A5C8] transition">Área Administrativa</Link>
+                <Link to={`/${companySlug}/admin`} className="text-gray-400 hover:text-[#E8A5C8] transition">Área Administrativa</Link>
               </li>
             </ul>
           </div>

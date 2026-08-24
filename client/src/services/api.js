@@ -76,7 +76,7 @@ api.interceptors.response.use(
         if (slug) {
           localStorage.removeItem(`studio_beauty_token_${slug}`);
           localStorage.removeItem(`studio_beauty_admin_${slug}`);
-          window.location.href = `/${slug}/admin/login`;
+          window.location.href = `/${slug}/admin`;
         }
       }
     }
@@ -91,6 +91,14 @@ export const authAPI = {
   },
   updateCredentials: async (data) => {
     const response = await api.put('/auth/admin/credentials', data);
+    return response.data;
+  },
+  recoverPassword: async (email) => {
+    const response = await api.post('/auth/admin/recover-password', { email });
+    return response.data;
+  },
+  resetPassword: async (token, newPassword) => {
+    const response = await api.post('/auth/admin/reset-password', { token, newPassword });
     return response.data;
   },
 };

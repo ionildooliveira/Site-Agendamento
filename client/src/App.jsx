@@ -14,6 +14,7 @@ import SuperAdminDashboard from './pages/super-admin/SuperAdminDashboard';
 
 // Admin pages
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAgenda from './pages/admin/Agenda';
@@ -53,8 +54,9 @@ export default function App() {
           <Route path="meus-agendamentos" element={<MyBookings />} />
 
           {/* Admin Routes */}
-          <Route path="admin/login" element={<Login />} />
-          <Route path="admin" element={<AdminLayout />}>
+          <Route path="admin" element={<Login />} />
+          <Route path="admin/reset-password" element={<ResetPassword />} />
+          <Route path="admin/painel" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="agenda" element={<AdminAgenda />} />
             <Route path="servicos" element={<AdminServices />} />
@@ -67,6 +69,7 @@ export default function App() {
         </Route>
 
         {/* Super Admin Routes */}
+        <Route path="/admin" element={<Navigate to="/super-admin/login" replace />} />
         <Route path="/super-admin/login" element={<SuperAdminLogin />} />
         <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
         <Route path="/super-admin" element={<Navigate to="/super-admin/login" replace />} />

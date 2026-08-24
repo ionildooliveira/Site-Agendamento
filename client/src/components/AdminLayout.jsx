@@ -33,29 +33,29 @@ export default function AdminLayout() {
 
   const token = localStorage.getItem(`studio_beauty_token_${companySlug}`);
   if (!token) {
-    return <Navigate to={`/${companySlug}/admin/login`} replace />;
+    return <Navigate to={`/${companySlug}/admin`} replace />;
   }
 
   const handleLogout = () => {
     localStorage.removeItem(`studio_beauty_token_${companySlug}`);
     localStorage.removeItem(`studio_beauty_admin_${companySlug}`);
-    navigate(`/${companySlug}/admin/login`);
+    navigate(`/${companySlug}/admin`);
   };
 
   const navItems = [
-    { label: 'Dashboard', path: `/${companySlug}/admin`, icon: <FaChartPie /> },
-    { label: 'Agenda', path: `/${companySlug}/admin/agenda`, icon: <FaCalendarAlt /> },
-    { label: 'Serviços', path: `/${companySlug}/admin/servicos`, icon: <FaCut /> },
-    { label: 'Profissionais', path: `/${companySlug}/admin/profissionais`, icon: <FaUserTie /> },
-    { label: 'Clientes', path: `/${companySlug}/admin/clientes`, icon: <FaUsers /> },
-    { label: 'Depoimentos', path: `/${companySlug}/admin/depoimentos`, icon: <FaStar /> },
-    { label: 'Galeria', path: `/${companySlug}/admin/galeria`, icon: <FaImage /> },
-    { label: 'Configurações', path: `/${companySlug}/admin/configuracoes`, icon: <FaCog /> },
+    { label: 'Dashboard', path: `/${companySlug}/admin/painel`, icon: <FaChartPie /> },
+    { label: 'Agenda', path: `/${companySlug}/admin/painel/agenda`, icon: <FaCalendarAlt /> },
+    { label: 'Serviços', path: `/${companySlug}/admin/painel/servicos`, icon: <FaCut /> },
+    { label: 'Profissionais', path: `/${companySlug}/admin/painel/profissionais`, icon: <FaUserTie /> },
+    { label: 'Clientes', path: `/${companySlug}/admin/painel/clientes`, icon: <FaUsers /> },
+    { label: 'Depoimentos', path: `/${companySlug}/admin/painel/depoimentos`, icon: <FaStar /> },
+    { label: 'Galeria', path: `/${companySlug}/admin/painel/galeria`, icon: <FaImage /> },
+    { label: 'Configurações', path: `/${companySlug}/admin/painel/configuracoes`, icon: <FaCog /> },
   ];
 
   const isActive = (path) => {
-    if (path === `/${companySlug}/admin`) {
-      return location.pathname === `/${companySlug}/admin` || location.pathname === `/${companySlug}/admin/`;
+    if (path === `/${companySlug}/admin/painel`) {
+      return location.pathname === `/${companySlug}/admin/painel` || location.pathname === `/${companySlug}/admin/painel/`;
     }
     return location.pathname.startsWith(path);
   };

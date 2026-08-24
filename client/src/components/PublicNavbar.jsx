@@ -79,7 +79,7 @@ export default function PublicNavbar() {
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-3">
           <Link
-            to={`/${companySlug}/admin/login`}
+            to={`/${companySlug}/admin`}
             className="text-xs font-medium text-gray-500 hover:text-[#D47FA6] flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-50 transition"
             title="Acesso Administrativo"
           >
@@ -133,7 +133,7 @@ export default function PublicNavbar() {
               Agendar Horário
             </Link>
             <Link
-              to={`/${companySlug}/admin/login`}
+              to={`/${companySlug}/admin`}
               onClick={() => setMenuOpen(false)}
               className="w-full text-center py-2 text-xs text-gray-500 hover:text-[#D47FA6]"
             >

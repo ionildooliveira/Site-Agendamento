@@ -106,8 +106,93 @@ const updateCredentialsHandler = async (req, res) => {
   res.json({ success: true, message: 'Credenciais atualizadas com sucesso. Por favor, faça login novamente.' });
 };
 
+const recoverPasswordHandler = async (req, res) => {
+  const { email } = req.body;
+  const tenantId = req.headers['x-tenant-id'];
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email é obrigatório' });
+  }
+
+  const supabase = getDB();
+  let query = supabase.from('admin_users').select('*').eq('email', email.toLowerCase().trim());
+  
+  if (tenantId) {
+    query = query.eq('company_id', tenantId);
+  }
+  
+  const { data: admin, error } = await query.single();
+
+  if (error || !admin) {
+    return res.status(404).json({ error: 'E-mail não encontrado em nossa base de dados.' });
+  }
+
+  const token = jwt.sign(
+    { reset_password_admin_id: admin.id },
+    JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+
+  const referer = req.headers.referer || '';
+  let resetLink = token;
+  if (referer.includes('/admin')) {
+    resetLink = referer.split('/admin')[0] + '/admin/reset-password?token=' + token;
+  }
+
+  // MOCK DE ENVIO DE EMAIL PARA TESTE LOCAL
+  console.log(`\n======================================================`);
+  console.log(`📧 MOCK DE E-MAIL (Recuperação de Senha)`);
+  console.log(`Para: ${admin.email}`);
+  console.log(`Assunto: Recuperação de Senha - Studio Beauty`);
+  console.log(`\nLink de recuperação (válido por 15min):`);
+  console.log(`${resetLink}`);
+  console.log(`======================================================\n`);
+
+  res.json({ message: 'Se o e-mail existir em nossa base, um link de recuperação será enviado.' });
+};
+
+const resetPasswordHandler = async (req, res) => {
+  const { token, newPassword } = req.body;
+  
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'A nova senha deve ter pelo menos 6 caracteres.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const adminId = decoded.reset_password_admin_id;
+
+    if (!adminId) {
+      return res.status(400).json({ error: 'Token inválido' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(newPassword, salt);
+
+    const supabase = getDB();
+    const { error: updateError } = await supabase
+      .from('admin_users')
+      .update({ password_hash })
+      .eq('id', adminId);
+
+    if (updateError) {
+      return res.status(500).json({ error: 'Erro ao atualizar a senha no banco de dados.' });
+    }
+
+    res.json({ success: true, message: 'Senha redefinida com sucesso!' });
+  } catch (err) {
+    return res.status(400).json({ error: 'Token inválido ou expirado. Solicite a recuperação novamente.' });
+  }
+};
+
 router.post('/login', loginHandler);
 router.post('/admin/login', loginHandler);
+router.post('/admin/recover-password', recoverPasswordHandler);
+router.post('/admin/reset-password', resetPasswordHandler);
 router.put('/admin/credentials', authenticateAdmin, updateCredentialsHandler);
 
 module.exports = router;
