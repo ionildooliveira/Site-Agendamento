@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getDB } = require('../database/db');
 const { JWT_SECRET, JWT_EXPIRES, authenticateAdmin } = require('../middleware/auth');
+const { sendRecoveryEmail } = require('../utils/email');
 
 const loginHandler = async (req, res) => {
   const { email, password } = req.body;
@@ -139,14 +140,12 @@ const recoverPasswordHandler = async (req, res) => {
     resetLink = referer.split('/admin')[0] + '/admin/reset-password?token=' + token;
   }
 
-  // MOCK DE ENVIO DE EMAIL PARA TESTE LOCAL
-  console.log(`\n======================================================`);
-  console.log(`📧 MOCK DE E-MAIL (Recuperação de Senha)`);
-  console.log(`Para: ${admin.email}`);
-  console.log(`Assunto: Recuperação de Senha - Studio Beauty`);
-  console.log(`\nLink de recuperação (válido por 15min):`);
-  console.log(`${resetLink}`);
-  console.log(`======================================================\n`);
+  // Envia o e-mail real
+  const emailSent = await sendRecoveryEmail(admin.email, resetLink);
+
+  if (!emailSent) {
+    return res.status(500).json({ error: 'Erro ao tentar enviar o e-mail de recuperação. Tente novamente mais tarde.' });
+  }
 
   res.json({ message: 'Se o e-mail existir em nossa base, um link de recuperação será enviado.' });
 };
