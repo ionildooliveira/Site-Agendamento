@@ -134,11 +134,8 @@ const recoverPasswordHandler = async (req, res) => {
     { expiresIn: '15m' }
   );
 
-  const referer = req.headers.referer || '';
-  let resetLink = token;
-  if (referer.includes('/admin')) {
-    resetLink = referer.split('/admin')[0] + '/admin/reset-password?token=' + token;
-  }
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const resetLink = `${clientUrl}/admin/reset-password?token=${token}`;
 
   // Envia o e-mail real
   const emailSent = await sendRecoveryEmail(admin.email, resetLink);
