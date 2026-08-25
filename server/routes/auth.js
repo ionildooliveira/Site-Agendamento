@@ -116,7 +116,7 @@ const recoverPasswordHandler = async (req, res) => {
   }
 
   const supabase = getDB();
-  let query = supabase.from('admin_users').select('*').eq('email', email.toLowerCase().trim());
+  let query = supabase.from('admin_users').select('*, companies(slug)').eq('email', email.toLowerCase().trim());
   
   if (tenantId) {
     query = query.eq('company_id', tenantId);
@@ -135,7 +135,8 @@ const recoverPasswordHandler = async (req, res) => {
   );
 
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-  const resetLink = `${clientUrl}/admin/reset-password?token=${token}`;
+  const slug = admin.companies?.slug ? `${admin.companies.slug}/` : '';
+  const resetLink = `${clientUrl}/${slug}admin/reset-password?token=${token}`;
 
   // Envia o e-mail real
   const emailSent = await sendRecoveryEmail(admin.email, resetLink);
