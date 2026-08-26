@@ -116,7 +116,7 @@ const recoverPasswordHandler = async (req, res) => {
   }
 
   const supabase = getDB();
-  let query = supabase.from('admin_users').select('*, companies(slug)').eq('email', email.toLowerCase().trim());
+  let query = supabase.from('admin_users').select('*, companies(name, slug)').eq('email', email.toLowerCase().trim());
   
   if (tenantId) {
     query = query.eq('company_id', tenantId);
@@ -134,12 +134,12 @@ const recoverPasswordHandler = async (req, res) => {
     { expiresIn: '15m' }
   );
 
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/+$/, '');
   const slug = admin.companies?.slug ? `${admin.companies.slug}/` : '';
   const resetLink = `${clientUrl}/${slug}admin/reset-password?token=${token}`;
 
   // Envia o e-mail real
-  const emailSent = await sendRecoveryEmail(admin.email, resetLink);
+  const emailSent = await sendRecoveryEmail(admin.email, resetLink, admin.companies?.name);
 
   if (!emailSent) {
     return res.status(500).json({ error: 'Erro ao tentar enviar o e-mail de recuperação. Tente novamente mais tarde.' });

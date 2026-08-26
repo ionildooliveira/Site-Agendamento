@@ -12,18 +12,18 @@ const createTransporter = () => {
   });
 };
 
-const sendRecoveryEmail = async (to, resetLink) => {
+const sendRecoveryEmail = async (to, resetLink, companyName = 'Studio Beauty') => {
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER || '"Studio Beauty" <no-reply@studiobeauty.com>',
+    from: process.env.SMTP_FROM || process.env.SMTP_USER || `"${companyName}" <no-reply@studiobeauty.com>`,
     to,
-    subject: 'Recuperação de Senha - Studio Beauty',
+    subject: `Recuperação de Senha - ${companyName}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
         <h2 style="color: #333; text-align: center;">Recuperação de Senha</h2>
         <p>Olá,</p>
-        <p>Recebemos uma solicitação para redefinir a senha da sua conta no Studio Beauty.</p>
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta no ${companyName}.</p>
         <p>Se você não fez essa solicitação, pode ignorar este e-mail. Caso contrário, clique no botão abaixo para redefinir sua senha:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${resetLink}" style="background-color: #000000; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Redefinir Minha Senha</a>
