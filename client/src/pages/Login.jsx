@@ -17,10 +17,9 @@ export default function Login() {
   const [recoveryEmail, setRecoveryEmail] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem(`studio_beauty_token_${companySlug}`);
-    if (token) {
-      navigate(`/${companySlug}/admin/painel`);
-    }
+    // Clear any existing session to force login when visiting the login page
+    localStorage.removeItem(`studio_beauty_token_${companySlug}`);
+    localStorage.removeItem(`studio_beauty_admin_${companySlug}`);
 
     const updateSalon = () => setSalon(getSalonSettings());
     window.addEventListener('salonSettingsUpdated', updateSalon);
