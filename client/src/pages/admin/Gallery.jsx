@@ -214,7 +214,7 @@ export default function AdminGallery() {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                     
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                       {img.title && <h3 className="text-white text-xs font-bold truncate">{img.title}</h3>}
                       
                       <button

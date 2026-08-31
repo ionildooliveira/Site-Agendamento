@@ -193,6 +193,10 @@ export const adminAPI = {
     const response = await api.get('/admin/clients');
     return response.data;
   },
+  getAvailabilityMonitor: async (date) => {
+    const response = await api.get('/admin/availability-monitor', { params: { date } });
+    return response.data;
+  }
 };
 
 export const settingsAPI = {

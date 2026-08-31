@@ -18,6 +18,7 @@ import ResetPassword from './pages/ResetPassword';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAgenda from './pages/admin/Agenda';
+import AvailabilityMonitor from './pages/admin/AvailabilityMonitor';
 import AdminServices from './pages/admin/Services';
 import AdminProfessionals from './pages/admin/Professionals';
 import AdminClients from './pages/admin/Clients';
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="admin/painel" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="agenda" element={<AdminAgenda />} />
+            <Route path="vagas" element={<AvailabilityMonitor />} />
             <Route path="servicos" element={<AdminServices />} />
             <Route path="profissionais" element={<AdminProfessionals />} />
             <Route path="clientes" element={<AdminClients />} />

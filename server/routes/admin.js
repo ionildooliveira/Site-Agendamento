@@ -212,4 +212,107 @@ router.get('/clients', authenticateAdmin, setTenantId, async (req, res) => {
   res.json(formattedClients);
 });
 
+// Helper: HH:MM -> minutes
+function toMin(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+// GET /api/admin/availability-monitor
+router.get('/availability-monitor', authenticateAdmin, setTenantId, async (req, res) => {
+  try {
+    const supabase = getDB();
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const reqDate = new Date(date + 'T00:00:00');
+    
+    const dayOfWeek = reqDate.getDay().toString();
+
+    // Saloon working hours
+    const { data: settings } = await supabase.from('settings').select('working_hours').eq('company_id', req.tenantId).single();
+    let workingHours = {};
+    if (settings && settings.working_hours) {
+      workingHours = typeof settings.working_hours === 'string' ? JSON.parse(settings.working_hours) : settings.working_hours;
+    }
+    const dayHours = workingHours[dayOfWeek];
+
+    if (!dayHours || typeof dayHours !== 'object' || !dayHours.open || !dayHours.close) {
+      return res.json({ date, closed: true, message: 'Salão fechado neste dia.' });
+    }
+
+    const slotInterval = 30; // 30-min blocks
+
+    // Professionals
+    const { data: professionals } = await supabase.from('professionals').select('id, name, working_hours').eq('company_id', req.tenantId).eq('active', true).order('name', { ascending: true });
+
+    // Blocked dates
+    const { data: blockedDates } = await supabase.from('blocked_dates').select('professional_id').eq('date', date).eq('company_id', req.tenantId);
+
+    // Bookings
+    const { data: bookings } = await supabase.from('bookings').select('professional_id, start_time, end_time').eq('booking_date', date).eq('company_id', req.tenantId).neq('status', 'cancelled');
+
+    const isToday = reqDate.toDateString() === today.toDateString();
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes(); 
+
+    const result = (professionals || []).map(pro => {
+      const isProBlocked = blockedDates?.some(b => !b.professional_id || b.professional_id === pro.id);
+      
+      let proWorkingHours = dayHours;
+      if (pro.working_hours) {
+        const pWh = typeof pro.working_hours === 'string' ? JSON.parse(pro.working_hours) : pro.working_hours;
+        if (pWh[dayOfWeek]) {
+          proWorkingHours = pWh[dayOfWeek];
+        }
+      }
+
+      if (isProBlocked || !proWorkingHours || !proWorkingHours.open || !proWorkingHours.close) {
+        return { professional: { id: pro.id, name: pro.name }, totalSlots: 0, availableSlots: 0, slots: [] };
+      }
+
+      const pOpenMin = toMin(proWorkingHours.open);
+      const pCloseMin = toMin(proWorkingHours.close);
+
+      const proBookings = bookings?.filter(b => b.professional_id === pro.id) || [];
+      const occupiedRanges = proBookings.map(b => ({
+        start: toMin(b.start_time),
+        end: toMin(b.end_time)
+      }));
+
+      const proSlots = [];
+      for (let t = pOpenMin; t + slotInterval <= pCloseMin; t += slotInterval) {
+        const h = Math.floor(t / 60).toString().padStart(2, '0');
+        const m = (t % 60).toString().padStart(2, '0');
+        const time = `${h}:${m}`;
+        
+        let available = true;
+        
+        if (isToday && t <= nowMin) {
+          available = false;
+        } else {
+          const hasConflict = occupiedRanges.some(r => t < r.end && (t + slotInterval) > r.start);
+          if (hasConflict) available = false;
+        }
+
+        proSlots.push({ time, available });
+      }
+
+      return {
+        professional: { id: pro.id, name: pro.name },
+        totalSlots: proSlots.length,
+        availableSlots: proSlots.filter(s => s.available).length,
+        slots: proSlots
+      };
+    });
+
+    res.json({ date, closed: false, professionals: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro interno ao buscar monitor de vagas' });
+  }
+});
+
 module.exports = router;
