@@ -20,6 +20,20 @@ export default function ResetPassword() {
     if (!token) {
       toast.error('Token inválido ou ausente.');
       navigate(`/${companySlug || ''}/admin`);
+      return;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp * 1000 < Date.now()) {
+        toast.error('O link de recuperação expirou. Por favor, solicite um novo.');
+        navigate(`/${companySlug || ''}/admin`);
+        return;
+      }
+    } catch (e) {
+      toast.error('Token inválido.');
+      navigate(`/${companySlug || ''}/admin`);
+      return;
     }
 
     const updateSalon = () => setSalon(getSalonSettings());
