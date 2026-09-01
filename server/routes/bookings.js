@@ -34,9 +34,11 @@ router.post('/', setTenantId, async (req, res) => {
   const supabase = getDB();
 
   // Block past datetime
+  const brTimeStr = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+  const nowBr = new Date(brTimeStr);
   const [y, mo, d] = date.split('-').map(Number);
   const [h, mi] = startTime.split(':').map(Number);
-  if (new Date(y, mo - 1, d, h, mi) <= new Date()) {
+  if (new Date(y, mo - 1, d, h, mi) <= nowBr) {
     return res.status(400).json({ error: 'Não é possível agendar para datas ou horários passados' });
   }
 
