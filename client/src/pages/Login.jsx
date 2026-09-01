@@ -107,7 +107,7 @@ export default function Login() {
                       placeholder="Seu e-mail"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="input pl-11 text-xs"
+                      className="input !pl-11 text-xs"
                       disabled={loading}
                     />
                     <FaEnvelope className="absolute left-4 top-4 text-rose-dark text-xs" />
@@ -132,7 +132,7 @@ export default function Login() {
                       placeholder="Sua senha"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="input pl-11 text-xs"
+                      className="input !pl-11 text-xs"
                       disabled={loading}
                     />
                     <FaLock className="absolute left-4 top-4 text-rose-dark text-xs" />
@@ -171,7 +171,7 @@ export default function Login() {
                       placeholder="E-mail cadastrado"
                       value={recoveryEmail}
                       onChange={(e) => setRecoveryEmail(e.target.value)}
-                      className="input pl-11 text-xs"
+                      className="input !pl-11 text-xs"
                       disabled={loading}
                     />
                     <FaEnvelope className="absolute left-4 top-4 text-rose-dark text-xs" />
