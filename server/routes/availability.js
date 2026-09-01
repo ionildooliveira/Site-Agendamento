@@ -28,7 +28,8 @@ router.get('/', setTenantId, async (req, res) => {
     const supabase = getDB();
 
     // ── 1. Block past dates ───────────────────────────────────────────────────
-    const today = new Date();
+    const brTimeStr = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+    const today = new Date(brTimeStr);
     today.setHours(0, 0, 0, 0);
     const reqDate = new Date(date + 'T00:00:00');
     if (reqDate < today) {
@@ -103,7 +104,7 @@ router.get('/', setTenantId, async (req, res) => {
 
     // ── 8. Check current time for "today" filtering ───────────────────────────
     const isToday = reqDate.toDateString() === today.toDateString();
-    const now = new Date();
+    const now = new Date(brTimeStr);
     const nowMin = now.getHours() * 60 + now.getMinutes() + 30; // add 30min buffer
 
     // ── 9. Mark slots as available / unavailable ──────────────────────────────

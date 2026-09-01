@@ -225,8 +225,10 @@ router.get('/availability-monitor', authenticateAdmin, setTenantId, async (req, 
     const supabase = getDB();
     const date = req.query.date || new Date().toISOString().split('T')[0];
 
-    const today = new Date();
+    const brTimeStr = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+    const today = new Date(brTimeStr);
     today.setHours(0, 0, 0, 0);
+    // Parse the requested date assuming it represents a local date
     const reqDate = new Date(date + 'T00:00:00');
     
     const dayOfWeek = reqDate.getDay().toString();
@@ -245,8 +247,8 @@ router.get('/availability-monitor', authenticateAdmin, setTenantId, async (req, 
 
     const slotInterval = 30; // 30-min blocks
 
-    // Professionals
-    const { data: professionals } = await supabase.from('professionals').select('id, name, working_hours').eq('company_id', req.tenantId).eq('active', true).order('name', { ascending: true });
+    // Professionals (removed working_hours from select as it doesn't exist in the DB)
+    const { data: professionals } = await supabase.from('professionals').select('id, name').eq('company_id', req.tenantId).eq('active', true).order('name', { ascending: true });
 
     // Blocked dates
     const { data: blockedDates } = await supabase.from('blocked_dates').select('professional_id').eq('date', date).eq('company_id', req.tenantId);
@@ -255,7 +257,7 @@ router.get('/availability-monitor', authenticateAdmin, setTenantId, async (req, 
     const { data: bookings } = await supabase.from('bookings').select('professional_id, start_time, end_time').eq('booking_date', date).eq('company_id', req.tenantId).neq('status', 'cancelled');
 
     const isToday = reqDate.toDateString() === today.toDateString();
-    const now = new Date();
+    const now = new Date(brTimeStr);
     const nowMin = now.getHours() * 60 + now.getMinutes(); 
 
     const result = (professionals || []).map(pro => {
