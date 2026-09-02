@@ -367,9 +367,10 @@ export default function AdminSettings() {
               <input
                 type="text"
                 required
+                disabled
                 value={salonData.name}
                 onChange={(e) => setSalonData({ ...salonData, name: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -406,9 +407,10 @@ export default function AdminSettings() {
               <input
                 type="email"
                 required
+                disabled
                 value={salonData.email}
                 onChange={(e) => setSalonData({ ...salonData, email: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -502,9 +504,10 @@ export default function AdminSettings() {
             <input
               type="text"
               required
+              disabled
               value={salonData.workingHoursText}
               onChange={(e) => setSalonData({ ...salonData, workingHoursText: e.target.value })}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             />
           </div>
 
