@@ -208,7 +208,7 @@ export default function MyBookings() {
                   placeholder="seuemail@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input pl-11 text-xs"
+                  className="input !pl-11 text-xs"
                 />
                 <FaEnvelope className="absolute left-4 top-4 text-rose-dark text-xs" />
               </div>
