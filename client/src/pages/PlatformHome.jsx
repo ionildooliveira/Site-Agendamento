@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -6,10 +6,20 @@ import {
   FaArrowRight, FaShieldAlt, FaMagic, FaGem, FaWhatsapp,
   FaUsers, FaStar, FaMobileAlt
 } from 'react-icons/fa';
+import { paymentsAPI } from '../services/api';
 
 export default function PlatformHome() {
   const navigate = useNavigate();
   const [salonSlugInput, setSalonSlugInput] = useState('');
+  const [planPrice, setPlanPrice] = useState('69,90');
+
+  useEffect(() => {
+    paymentsAPI.getConfig().then(cfg => {
+      if (cfg && cfg.planPrice) {
+        setPlanPrice(Number(cfg.planPrice).toFixed(2).replace('.', ','));
+      }
+    }).catch(() => {});
+  }, []);
 
   const handleAccessExisting = (e) => {
     e.preventDefault();
@@ -208,7 +218,7 @@ export default function PlatformHome() {
             <p className="text-xs text-gray-500 mt-1">Gestão completa e ilimitada para o seu salão</p>
 
             <div className="my-6">
-              <span className="text-4xl sm:text-5xl font-extrabold text-[#6B4E5A]">R$ 49,90</span>
+              <span className="text-4xl sm:text-5xl font-extrabold text-[#6B4E5A]">R$ {planPrice}</span>
               <span className="text-sm text-gray-500 font-medium ml-2">/ mês</span>
             </div>
 
