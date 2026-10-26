@@ -274,6 +274,7 @@ router.post('/process', async (req, res) => {
       amount: planPrice,
       description: `Assinatura Recorrente ${planName} - Salão ${salonData.name}`,
       token: paymentData.cardToken || paymentData.token,
+      card: paymentData.card,
       paymentMethodId: paymentData.paymentMethodId || (isDebit ? 'debit_card' : 'credit_card'),
       installments: 1,
       payer: {
