@@ -196,7 +196,7 @@ export default function SuperAdminDashboard() {
               <p className="text-gray-500 mt-1">
                 Crie um novo ambiente de salão manualmente, ou envie o link público de auto-cadastro com Mercado Pago: 
                 <a href="/cadastro" target="_blank" rel="noopener noreferrer" className="ml-1 text-[#4A323D] font-mono font-bold underline hover:text-[#D47FA6]">
-                  http://localhost:5173/cadastro
+                  {typeof window !== 'undefined' ? window.location.origin : ''}/cadastro
                 </a>
               </p>
             </div>

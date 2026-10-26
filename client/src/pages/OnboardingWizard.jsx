@@ -1026,7 +1026,7 @@ export default function OnboardingWizard() {
                     Link Público para Clientes
                   </span>
                   <p className="text-xs font-mono text-[#4A323D] font-bold truncate">
-                    http://localhost:5173/{provisionResult.company?.slug}
+                    {typeof window !== 'undefined' ? window.location.origin : ''}/{provisionResult.company?.slug}
                   </p>
                   <p className="text-[11px] text-gray-500 mt-1 mb-3">
                     Envie este link para suas clientes agendarem horários online.
@@ -1048,7 +1048,7 @@ export default function OnboardingWizard() {
                     Acesso Administrativo
                   </span>
                   <p className="text-xs font-mono text-[#4A323D] font-bold truncate">
-                    /{provisionResult.company?.slug}/admin
+                    {typeof window !== 'undefined' ? window.location.origin : ''}/{provisionResult.company?.slug}/admin
                   </p>
                   <p className="text-[11px] text-gray-500 mt-1 mb-3">
                     Gerencie sua agenda, equipe de especialistas e serviços.
