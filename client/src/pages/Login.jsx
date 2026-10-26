@@ -150,6 +150,13 @@ export default function Login() {
                     'Entrar no Painel'
                   )}
                 </button>
+
+                <div className="text-center pt-2 border-t border-gray-100">
+                  <span className="text-[11px] text-gray-500">Quer cadastrar seu próprio salão? </span>
+                  <Link to="/cadastro" className="text-[11px] text-[#D47FA6] hover:underline font-bold">
+                    Criar meu salão agora
+                  </Link>
+                </div>
               </form>
             </>
           ) : (

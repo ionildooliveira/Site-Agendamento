@@ -10,6 +10,7 @@ export default function TenantLayout() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     async function fetchTenant() {
@@ -26,6 +27,9 @@ export default function TenantLayout() {
         console.error('Error fetching tenant:', error);
         if (error.response?.status === 403 || error.response?.data?.blocked) {
           setIsBlocked(true);
+          if (error.response?.data?.expired) {
+            setIsExpired(true);
+          }
         } else {
           toast.error('Empresa não encontrada.');
           navigate('/');
@@ -51,7 +55,7 @@ export default function TenantLayout() {
   }
 
   if (isBlocked) {
-    return <BlockedCompany />;
+    return <BlockedCompany isExpired={isExpired} companySlug={companySlug} />;
   }
 
   return <Outlet />;

@@ -105,6 +105,35 @@ router.post('/create', authenticateSuperAdmin, async (req, res) => {
   }
 });
 
+// Check if a company slug is available
+router.get('/check-slug/:slug', async (req, res) => {
+  const { slug } = req.params;
+  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  
+  if (!cleanSlug || cleanSlug.length < 2) {
+    return res.json({ available: false, message: 'Link muito curto (mínimo 2 caracteres).' });
+  }
+
+  // Reserved keywords
+  const reserved = ['admin', 'super-admin', 'api', 'cadastro', 'assinar', 'onboarding', 'login', 'servicos', 'agendar'];
+  if (reserved.includes(cleanSlug)) {
+    return res.json({ available: false, message: 'Este link é reservado pelo sistema.' });
+  }
+
+  const supabase = getDB();
+  const { data: existing } = await supabase
+    .from('companies')
+    .select('id, name')
+    .eq('slug', cleanSlug)
+    .single();
+
+  if (existing) {
+    return res.json({ available: false, message: 'Este link já está em uso por outro salão.' });
+  }
+
+  return res.json({ available: true, slug: cleanSlug });
+});
+
 // Get company details by slug for public facing pages
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
@@ -120,8 +149,41 @@ router.get('/:slug', async (req, res) => {
     return res.status(404).json({ error: 'Empresa não encontrada.' });
   }
 
+  // 1. Verificar se a assinatura expirou automaticamente
+  try {
+    const { data: settings } = await supabase
+      .from('settings')
+      .select('salon_data')
+      .eq('company_id', company.id)
+      .single();
+
+    const sub = settings?.salon_data?.subscription;
+    if (sub && sub.status === 'cancelled' && sub.next_billing_date) {
+      const expiry = new Date(sub.next_billing_date).getTime();
+      if (Date.now() > expiry) {
+        // O prazo de tolerância terminou! Bloqueia a empresa no banco
+        if (company.is_active !== false) {
+          await supabase.from('companies').update({ is_active: false }).eq('id', company.id);
+          company.is_active = false;
+        }
+        return res.status(403).json({
+          error: 'A assinatura deste salão expirou. Renove seu plano para reativar o acesso aos agendamentos.',
+          blocked: true,
+          expired: true,
+          slug: company.slug
+        });
+      }
+    }
+  } catch (subCheckErr) {
+    console.warn('Erro ao verificar expiração de assinatura:', subCheckErr.message);
+  }
+
   if (company.is_active === false) {
-    return res.status(403).json({ error: 'Esta empresa está temporariamente bloqueada.', blocked: true });
+    return res.status(403).json({
+      error: 'Esta empresa está temporariamente bloqueada.',
+      blocked: true,
+      slug: company.slug
+    });
   }
 
   res.json(company);
@@ -139,13 +201,52 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao buscar empresas.' });
   }
 
-  res.json(companies);
+  // Buscar configurações de cada empresa para anexar o status da assinatura
+  try {
+    const { data: allSettings } = await supabase
+      .from('settings')
+      .select('company_id, salon_data');
+
+    const settingsMap = new Map();
+    (allSettings || []).forEach(s => settingsMap.set(s.company_id, s.salon_data?.subscription));
+
+    const enrichedCompanies = (companies || []).map(comp => {
+      const sub = settingsMap.get(comp.id);
+      let subStatus = 'active';
+      let isExpired = false;
+
+      if (sub) {
+        if (sub.status === 'cancelled') {
+          const expiry = sub.next_billing_date ? new Date(sub.next_billing_date).getTime() : 0;
+          if (Date.now() > expiry) {
+            subStatus = 'expired';
+            isExpired = true;
+          } else {
+            subStatus = 'cancelled_grace_period';
+          }
+        } else {
+          subStatus = sub.status || 'active';
+        }
+      }
+
+      return {
+        ...comp,
+        subscription: sub || null,
+        subStatus,
+        isExpired
+      };
+    });
+
+    return res.json(enrichedCompanies);
+  } catch {
+    res.json(companies);
+  }
 });
 
 // PUT update company (Protected)
 router.put('/:id', authenticateSuperAdmin, async (req, res) => {
   const { id } = req.params;
-  const { name, slug } = req.body;
+  const { name, slug, monthlyPrice } = req.body;
   const supabase = getDB();
 
   if (!name || !slug) return res.status(400).json({ error: 'Nome e slug são obrigatórios.' });
@@ -162,6 +263,39 @@ router.put('/:id', authenticateSuperAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Esse link/slug já está em uso.' });
     }
     return res.status(500).json({ error: 'Erro ao atualizar empresa.' });
+  }
+
+  // Atualizar valor da mensalidade individual se informado
+  if (monthlyPrice !== undefined && monthlyPrice !== null && !isNaN(Number(monthlyPrice))) {
+    try {
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('salon_data')
+        .eq('company_id', id)
+        .single();
+
+      if (settings?.salon_data) {
+        const currentSub = settings.salon_data.subscription || {};
+        const updatedSalonData = {
+          ...settings.salon_data,
+          subscription: {
+            ...currentSub,
+            amount: Number(monthlyPrice),
+          },
+        };
+        await supabase
+          .from('settings')
+          .update({ salon_data: updatedSalonData })
+          .eq('company_id', id);
+      }
+
+      await supabase
+        .from('subscriptions')
+        .update({ amount: Number(monthlyPrice) })
+        .eq('company_id', id);
+    } catch (priceErr) {
+      console.warn('Erro ao atualizar preço da assinatura:', priceErr.message);
+    }
   }
   
   res.json({ success: true, company: data });

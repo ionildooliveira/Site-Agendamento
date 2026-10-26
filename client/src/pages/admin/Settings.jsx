@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { settingsAPI, professionalsAPI, authAPI } from '../../services/api';
+import { settingsAPI, professionalsAPI, authAPI, paymentsAPI } from '../../services/api';
 import { getSalonSettings, saveSalonSettings, generateWorkingHoursText } from '../../services/salonSettings';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
   FaClock, FaCalendarMinus, FaTrash, FaSave, FaPlusCircle,
-  FaPowerOff, FaStore, FaWhatsapp, FaImage, FaLock
+  FaPowerOff, FaStore, FaWhatsapp, FaImage, FaLock,
+  FaCreditCard, FaShieldAlt, FaCheckCircle, FaExclamationTriangle,
+  FaTimes, FaUndo, FaBan
 } from 'react-icons/fa';
 
 export default function AdminSettings() {
@@ -34,6 +36,11 @@ export default function AdminSettings() {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [subscription, setSubscription] = useState(null);
+  const [cancellingSub, setCancellingSub] = useState(false);
+  const [reactivatingSub, setReactivatingSub] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
 
   const weekdays = [
     { key: '1', label: 'Segunda-feira' },
@@ -77,6 +84,7 @@ export default function AdminSettings() {
         setSlotInterval(sets.slot_interval || 30);
         setBlockedDates(blocks || []);
         setProfessionals(pros || []);
+        paymentsAPI.getSubscription().then(setSubscription).catch(() => {});
       } catch (err) {
         console.error(err);
         toast.error('Erro ao carregar configurações');
@@ -284,6 +292,36 @@ export default function AdminSettings() {
     }
   };
 
+  // Subscription Actions (Tab 5)
+  const handleCancelSubscription = async () => {
+    try {
+      setCancellingSub(true);
+      const res = await paymentsAPI.cancelSubscription(cancellationReason);
+      setSubscription(res.subscription);
+      setShowCancelModal(false);
+      toast.success('Assinatura cancelada com sucesso. O salão continuará ativo até o término do período pago.');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || 'Erro ao cancelar assinatura.');
+    } finally {
+      setCancellingSub(false);
+    }
+  };
+
+  const handleReactivateSubscription = async () => {
+    try {
+      setReactivatingSub(true);
+      const res = await paymentsAPI.reactivateSubscription();
+      setSubscription(res.subscription);
+      toast.success('Renovação automática reativada com sucesso!');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || 'Erro ao reativar assinatura.');
+    } finally {
+      setReactivatingSub(false);
+    }
+  };
+
   return (
     <div className="space-y-6 font-sans text-[#4A323D]">
       {/* Header */}
@@ -342,6 +380,18 @@ export default function AdminSettings() {
         >
           <FaLock />
           <span>Acesso</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('subscription')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+            activeTab === 'subscription'
+              ? 'bg-[#D47FA6] text-white shadow-sm'
+              : 'bg-white text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          <FaCreditCard />
+          <span>Assinatura & Plano</span>
         </button>
       </div>
 
@@ -772,6 +822,201 @@ export default function AdminSettings() {
             </button>
           </div>
         </form>
+      )}
+
+      {/* Tab 5: Assinatura & Plano (Mercado Pago) */}
+      {activeTab === 'subscription' && (
+        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
+          <div className="border-b border-gray-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-[#4A323D]">Minha Assinatura & Plano</h2>
+              <p className="text-xs text-gray-500">
+                Gerencie sua mensalidade recorrente e formas de pagamento integradas ao Mercado Pago.
+              </p>
+            </div>
+            {subscription?.status === 'cancelled' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                <FaExclamationTriangle /> Cancelamento Agendado
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                <FaCheckCircle /> Assinatura Ativa
+              </span>
+            )}
+          </div>
+
+          {/* Banner de Aviso de Cancelamento */}
+          {subscription?.status === 'cancelled' && (
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 space-y-2">
+              <div className="flex items-center gap-2 font-bold">
+                <FaExclamationTriangle className="text-amber-600 text-sm" />
+                <span>Renovação Automática Cancelada</span>
+              </div>
+              <p className="leading-relaxed">
+                Você solicitou o cancelamento da sua assinatura. Seu salão continuará online e recebendo agendamentos de clientes até o final do período já pago em{' '}
+                <strong>
+                  {subscription?.next_billing_date
+                    ? new Date(subscription.next_billing_date).toLocaleDateString('pt-BR')
+                    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+                </strong>
+                . Nenhuma nova cobrança será realizada no seu cartão.
+              </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleReactivateSubscription}
+                  disabled={reactivatingSub}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition disabled:opacity-50"
+                >
+                  <FaUndo />
+                  <span>{reactivatingSub ? 'Reativando...' : 'Reativar Renovação Automática'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Plano Atual</span>
+              <p className="text-lg font-bold text-[#4A323D] mt-1">{subscription?.plan || 'Plano Profissional'}</p>
+              <span className="text-xs text-gray-500">Acesso ilimitado a todos os recursos</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Valor da Mensalidade</span>
+              <p className="text-lg font-bold text-[#6B4E5A] mt-1">
+                R$ {Number(subscription?.amount || 49.90).toFixed(2).replace('.', ',')} / mês
+              </p>
+              <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                {subscription?.status === 'cancelled' ? (
+                  <span className="text-amber-700 font-medium">Cobrança Automática Desativada</span>
+                ) : (
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                    <FaShieldAlt /> Cobrança Automática Ativa
+                  </span>
+                )}
+              </span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Forma de Pagamento</span>
+              <p className="text-sm font-bold text-[#4A323D] mt-1 capitalize">
+                {subscription?.payment_method === 'pix'
+                  ? 'PIX Instantâneo'
+                  : subscription?.payment_method === 'debit_card'
+                  ? 'Cartão de Débito'
+                  : 'Cartão de Crédito Recorrente'}
+              </p>
+              <span className="text-xs text-gray-500">Instituição: Mercado Pago</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                {subscription?.status === 'cancelled' ? 'Acesso Garantido Até' : 'Próxima Renovação'}
+              </span>
+              <p className="text-sm font-bold text-[#4A323D] mt-1">
+                {subscription?.next_billing_date
+                  ? new Date(subscription.next_billing_date).toLocaleDateString('pt-BR')
+                  : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+              </p>
+              <span className="text-xs text-gray-500">
+                {subscription?.status === 'cancelled' ? 'Término do ciclo vigente' : 'Cobrança automática em 30 dias'}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[#FFF8FA] border border-[#F5D8E3] text-xs text-gray-600 leading-relaxed space-y-1">
+            <p className="font-bold text-[#4A323D] flex items-center gap-1.5">
+              <FaShieldAlt className="text-[#D47FA6]" /> Garantia de Continuidade & Transparência
+            </p>
+            <p>
+              Você tem total liberdade e autonomia para gerenciar sua assinatura a qualquer momento, sem contratos de fidelidade ou taxas de cancelamento surpresa.
+            </p>
+          </div>
+
+          {/* Ações de Cancelamento */}
+          {subscription?.status !== 'cancelled' && (
+            <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-gray-700 block">Deseja cancelar sua assinatura?</span>
+                <span className="text-[11px] text-gray-500 block">
+                  Você não terá novas cobranças e manterá seu acesso até o fim do mês pago.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCancelModal(true)}
+                className="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition flex items-center gap-1.5"
+              >
+                <FaBan />
+                <span>Cancelar Assinatura</span>
+              </button>
+            </div>
+          )}
+
+          {/* Modal de Confirmação de Cancelamento */}
+          {showCancelModal && (
+            <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-4 animate-scaleUp">
+                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mx-auto">
+                  <FaExclamationTriangle />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-bold text-[#4A323D]">Cancelar Renovação Automática?</h3>
+                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                    Sentiremos sua falta! Veja como funcionará o seu cancelamento:
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-600 space-y-2">
+                  <p className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">✓</span>
+                    <span><strong>Nenhuma nova cobrança</strong> será feita no seu cartão de crédito.</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">✓</span>
+                    <span>Seu salão continuará funcionando normalmente até o final do período já pago.</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">✓</span>
+                    <span>Seus dados, equipe e agendamentos serão preservados caso decida retornar.</span>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1">
+                    Motivo do cancelamento (opcional):
+                  </label>
+                  <textarea
+                    rows="2"
+                    placeholder="Nos conte brevemente o que poderíamos ter feito melhor..."
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    className="w-full p-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                  />
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition"
+                  >
+                    Manter Minha Assinatura
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelSubscription}
+                    disabled={cancellingSub}
+                    className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow disabled:opacity-50"
+                  >
+                    {cancellingSub ? 'Cancelando...' : 'Confirmar Cancelamento'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
         </>
       )}

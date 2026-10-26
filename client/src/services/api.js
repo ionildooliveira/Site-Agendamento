@@ -107,6 +107,10 @@ export const companiesAPI = {
   getBySlug: async (slug) => {
     const response = await api.get(`/companies/${slug}`);
     return response.data;
+  },
+  checkSlug: async (slug) => {
+    const response = await api.get(`/companies/check-slug/${slug}`);
+    return response.data;
   }
 };
 
@@ -312,6 +316,37 @@ export const galleryAPI = {
   },
   delete: async (id) => {
     const response = await api.delete(`/gallery/${id}`);
+    return response.data;
+  }
+};
+
+export const paymentsAPI = {
+  getConfig: async () => {
+    const response = await api.get('/payments/config');
+    return response.data;
+  },
+  process: async (data) => {
+    const response = await api.post('/payments/process', data);
+    return response.data;
+  },
+  getStatus: async (paymentId) => {
+    const response = await api.get(`/payments/status/${paymentId}`);
+    return response.data;
+  },
+  simulateApproval: async (paymentId) => {
+    const response = await api.post('/payments/simulate-approval', { paymentId });
+    return response.data;
+  },
+  getSubscription: async () => {
+    const response = await api.get('/payments/subscription');
+    return response.data;
+  },
+  cancelSubscription: async (reason = '') => {
+    const response = await api.post('/payments/subscription/cancel', { reason });
+    return response.data;
+  },
+  reactivateSubscription: async () => {
+    const response = await api.post('/payments/subscription/reactivate');
     return response.data;
   }
 };

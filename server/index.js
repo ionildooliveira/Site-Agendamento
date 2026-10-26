@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 
@@ -15,9 +16,9 @@ const settingsRoutes = require('./routes/settings');
 const companiesRoutes = require('./routes/companies');
 const testimonialsRoutes = require('./routes/testimonials');
 const galleryRoutes = require('./routes/gallery');
+const paymentsRoutes = require('./routes/payments');
 const { authenticateAdmin } = require('./middleware/auth');
 const { getDB } = require('./database/db');
-const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -50,6 +51,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/companies', companiesRoutes);
 app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/gallery', galleryRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Direct spec aliases
 app.get('/api/dashboard', authenticateAdmin, (req, res, next) => {

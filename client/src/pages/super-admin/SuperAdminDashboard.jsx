@@ -29,7 +29,7 @@ export default function SuperAdminDashboard() {
   
   // Edit Modal State
   const [editingCompany, setEditingCompany] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', slug: '' });
+  const [editFormData, setEditFormData] = useState({ name: '', slug: '', monthlyPrice: 49.90 });
 
   useEffect(() => {
     const savedPassword = sessionStorage.getItem('superAdminPassword');
@@ -193,7 +193,12 @@ export default function SuperAdminDashboard() {
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 Cadastrar Nova Empresa
               </h2>
-              <p className="text-gray-500 mt-1">Crie um novo ambiente de salão totalmente isolado para seu cliente.</p>
+              <p className="text-gray-500 mt-1">
+                Crie um novo ambiente de salão manualmente, ou envie o link público de auto-cadastro com Mercado Pago: 
+                <a href="/cadastro" target="_blank" rel="noopener noreferrer" className="ml-1 text-[#4A323D] font-mono font-bold underline hover:text-[#D47FA6]">
+                  http://localhost:5173/cadastro
+                </a>
+              </p>
             </div>
 
             {successMsg && (
@@ -340,7 +345,8 @@ export default function SuperAdminDashboard() {
                     <tr className="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm">
                       <th className="p-4 font-semibold">Nome da Empresa</th>
                       <th className="p-4 font-semibold">Link (Slug)</th>
-                      <th className="p-4 font-semibold">Status</th>
+                      <th className="p-4 font-semibold">Status Acesso</th>
+                      <th className="p-4 font-semibold">Plano & Assinatura</th>
                       <th className="p-4 font-semibold">Data Cadastro</th>
                       <th className="p-4 font-semibold text-right">Ações</th>
                     </tr>
@@ -361,6 +367,36 @@ export default function SuperAdminDashboard() {
                             </span>
                           )}
                         </td>
+                        <td className="p-4">
+                          {company.subStatus === 'cancelled_grace_period' ? (
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
+                                Cancelado
+                              </span>
+                              <span className="block text-[10px] text-gray-500 mt-0.5">
+                                Ativo até {company.subscription?.next_billing_date ? new Date(company.subscription.next_billing_date).toLocaleDateString('pt-BR') : 'Fim do ciclo'}
+                              </span>
+                            </div>
+                          ) : company.subStatus === 'expired' || company.isExpired ? (
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-800">
+                                Expirada
+                              </span>
+                              <span className="block text-[10px] text-red-500 mt-0.5 font-medium">
+                                Renovação pendente
+                              </span>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                R$ {Number(company.subscription?.amount || 49.90).toFixed(2).replace('.', ',')} / mês
+                              </span>
+                              <span className="block text-[10px] text-gray-400 mt-0.5">
+                                Renovação: {company.subscription?.next_billing_date ? new Date(company.subscription.next_billing_date).toLocaleDateString('pt-BR') : 'Automática'}
+                              </span>
+                            </div>
+                          )}
+                        </td>
                         <td className="p-4 text-sm text-gray-500">
                           {new Date(company.created_at).toLocaleDateString('pt-BR')}
                         </td>
@@ -369,7 +405,11 @@ export default function SuperAdminDashboard() {
                             <button
                               onClick={() => {
                                 setEditingCompany(company);
-                                setEditFormData({ name: company.name, slug: company.slug });
+                                setEditFormData({
+                                  name: company.name,
+                                  slug: company.slug,
+                                  monthlyPrice: Number(company.subscription?.amount || 49.90).toFixed(2)
+                                });
                               }}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Editar"
@@ -437,6 +477,19 @@ export default function SuperAdminDashboard() {
                   onChange={e => setEditFormData({...editFormData, slug: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A323D] outline-none"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Valor da Mensalidade (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editFormData.monthlyPrice}
+                  onChange={e => setEditFormData({...editFormData, monthlyPrice: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A323D] outline-none"
+                />
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Permite conceder desconto ou reajustar o plano individualmente para este salão.
+                </p>
               </div>
             </div>
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
