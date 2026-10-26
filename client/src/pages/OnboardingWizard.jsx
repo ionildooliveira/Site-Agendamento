@@ -16,8 +16,8 @@ export default function OnboardingWizard() {
   const [loading, setLoading] = useState(false);
   const [mpConfig, setMpConfig] = useState({
     isConfigured: false,
-    planPrice: 49.90,
-    planName: 'Plano Profissional',
+    planPrice: 1.00,
+    planName: 'Plano Profissional (Teste R$ 1,00)',
     autoRecurring: true,
   });
 
@@ -316,8 +316,8 @@ export default function OnboardingWizard() {
     }
   };
 
-  const planDisplayPrice = Number(mpConfig?.planPrice || 49.90).toFixed(2).replace('.', ',');
-  const planDisplayName = mpConfig?.planName || 'Plano Profissional';
+  const planDisplayPrice = Number(mpConfig?.planPrice || 1.00).toFixed(2).replace('.', ',');
+  const planDisplayName = mpConfig?.planName || 'Plano Profissional (Teste R$ 1,00)';
 
   return (
     <div className="min-h-screen bg-[#FFF8FA] flex flex-col font-sans text-[#4A323D]">

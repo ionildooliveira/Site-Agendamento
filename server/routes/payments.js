@@ -31,7 +31,7 @@ setInterval(() => {
 async function provisionSalonAndUser({ userData, salonData, paymentData, paymentId }) {
   const supabase = getDB();
   const cleanSlug = salonData.slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const planPrice = Number(process.env.PLAN_MONTHLY_PRICE || 49.90);
+  const planPrice = Number(process.env.PLAN_MONTHLY_PRICE || 1.00);
   const planName = process.env.PLAN_NAME || 'Plano Profissional';
 
   // 1. Criar Empresa
@@ -175,7 +175,7 @@ router.get('/config', (req, res) => {
   res.json({
     isConfigured: isMercadoPagoConfigured(),
     publicKey: process.env.MERCADO_PAGO_PUBLIC_KEY || '',
-    planPrice: Number(process.env.PLAN_MONTHLY_PRICE || 49.90),
+    planPrice: Number(process.env.PLAN_MONTHLY_PRICE || 1.00),
     planName: process.env.PLAN_NAME || 'Plano Profissional',
     autoRecurring: true,
     isLocalDev: process.env.NODE_ENV !== 'production',
@@ -228,7 +228,7 @@ router.post('/process', async (req, res) => {
       });
     }
 
-    const planPrice = Number(process.env.PLAN_MONTHLY_PRICE || 49.90);
+    const planPrice = Number(process.env.PLAN_MONTHLY_PRICE || 1.00);
     const planName = process.env.PLAN_NAME || 'Plano Profissional';
 
     // ── Processamento PIX ─────────────────────────────────────────────────────
@@ -447,7 +447,7 @@ router.get('/subscription', authenticateAdmin, async (req, res) => {
     const subscription = settings?.salon_data?.subscription || {
       status: 'active',
       plan: process.env.PLAN_NAME || 'Plano Profissional',
-      amount: Number(process.env.PLAN_MONTHLY_PRICE || 49.90),
+      amount: Number(process.env.PLAN_MONTHLY_PRICE || 1.00),
       billing_cycle: 'monthly',
       auto_recurring: true,
       payment_method: 'credit_card',
