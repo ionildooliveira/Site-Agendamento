@@ -29,7 +29,7 @@ export default function SuperAdminDashboard() {
   
   // Edit Modal State
   const [editingCompany, setEditingCompany] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', slug: '', monthlyPrice: 49.90 });
+  const [editFormData, setEditFormData] = useState({ name: '', slug: '', monthlyPrice: 69.90 });
 
   useEffect(() => {
     const savedPassword = sessionStorage.getItem('superAdminPassword');
@@ -389,7 +389,7 @@ export default function SuperAdminDashboard() {
                           ) : (
                             <div>
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                                R$ {Number(company.subscription?.amount || 49.90).toFixed(2).replace('.', ',')} / mês
+                                R$ {Number(company.subscription?.amount || 69.90).toFixed(2).replace('.', ',')} / mês
                               </span>
                               <span className="block text-[10px] text-gray-400 mt-0.5">
                                 Renovação: {company.subscription?.next_billing_date ? new Date(company.subscription.next_billing_date).toLocaleDateString('pt-BR') : 'Automática'}
@@ -408,7 +408,7 @@ export default function SuperAdminDashboard() {
                                 setEditFormData({
                                   name: company.name,
                                   slug: company.slug,
-                                  monthlyPrice: Number(company.subscription?.amount || 49.90).toFixed(2)
+                                  monthlyPrice: Number(company.subscription?.amount || 69.90).toFixed(2)
                                 });
                               }}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

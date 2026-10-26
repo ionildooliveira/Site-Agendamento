@@ -885,7 +885,7 @@ export default function AdminSettings() {
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Valor da Mensalidade</span>
               <p className="text-lg font-bold text-[#6B4E5A] mt-1">
-                R$ {Number(subscription?.amount || 49.90).toFixed(2).replace('.', ',')} / mês
+                R$ {Number(subscription?.amount || 69.90).toFixed(2).replace('.', ',')} / mês
               </p>
               <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                 {subscription?.status === 'cancelled' ? (
