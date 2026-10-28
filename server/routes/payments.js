@@ -378,9 +378,16 @@ router.post('/process', async (req, res) => {
       return res.status(400).json({
         status: cardResult.status,
         error:
-          cardResult.status_detail === 'cc_rejected_insufficient_amount'
+          cardResult.error ||
+          (cardResult.status_detail === 'cc_rejected_insufficient_amount'
             ? 'Saldo insuficiente no cartão.'
-            : 'O pagamento não foi autorizado pelo banco emissor. Verifique os dados do cartão e tente novamente.',
+            : cardResult.status_detail === 'cc_rejected_bad_filled_card_number'
+            ? 'Número de cartão inválido (falha no algoritmo de validação).'
+            : cardResult.status_detail === 'cc_rejected_bad_filled_date'
+            ? 'Data de expiração do cartão inválida ou vencida.'
+            : cardResult.status_detail === 'cc_rejected_bad_filled_security_code'
+            ? 'Código de segurança (CVV) inválido.'
+            : 'O pagamento não foi autorizado pelo banco emissor. Verifique os dados do cartão e tente novamente.'),
       });
     }
   } catch (error) {

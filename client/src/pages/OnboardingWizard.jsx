@@ -133,6 +133,64 @@ export default function OnboardingWizard() {
     return `${raw.slice(0, 2)}/${raw.slice(2, 4)}`;
   };
 
+  // Algoritmo de Luhn (ISO/IEC 7812) para validar número do cartão
+  const validateCardNumber = (num) => {
+    if (!num) return false;
+    const clean = String(num).replace(/\D/g, '');
+    if (clean.length < 13 || clean.length > 19) return false;
+    if (/^(\d)\1+$/.test(clean)) return false; // descarta repetidos como 1111111111111111
+
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = clean.length - 1; i >= 0; i--) {
+      let digit = parseInt(clean.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
+
+  // Validação de expiração do cartão (formato MM/AA ou MM/AAAA, não vencido)
+  const validateCardExpiry = (expiry) => {
+    if (!expiry || !/^\d{2}\/\d{2,4}$/.test(expiry.trim())) return false;
+    const [monthStr, yearStr] = expiry.trim().split('/');
+    const month = parseInt(monthStr, 10);
+    let year = parseInt(yearStr, 10);
+    if (month < 1 || month > 12) return false;
+    if (year < 100) year += 2000;
+
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth() + 1;
+    if (year < curYear) return false;
+    if (year === curYear && month < curMonth) return false;
+    if (year > curYear + 25) return false;
+    return true;
+  };
+
+  // Validação de CVV
+  const validateCardCVV = (cvv) => {
+    if (!cvv) return false;
+    const clean = String(cvv).replace(/\D/g, '');
+    return clean.length >= 3 && clean.length <= 4;
+  };
+
+  // Identificação da bandeira
+  const getCardBrand = (num) => {
+    if (!num) return '';
+    const clean = String(num).replace(/\D/g, '');
+    if (/^4/.test(clean)) return 'Visa';
+    if (/^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)/.test(clean)) return 'Mastercard';
+    if (/^(4011|4389|4514|4576|5041|5066|5090|6277|6362|6500|6504|6505|6507|6509|6516|6550)/.test(clean)) return 'Elo';
+    if (/^3[47]/.test(clean)) return 'American Express';
+    if (/^(606282|3841)/.test(clean)) return 'Hipercard';
+    return '';
+  };
+
   // Auto-generate slug when name changes
   const handleSalonNameChange = (e) => {
     const nameVal = e.target.value;
@@ -251,10 +309,21 @@ export default function OnboardingWizard() {
 
     if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
       const cleanNum = (cardData.number || '').replace(/\D/g, '');
-      if (cleanNum.length < 13) return toast.error('Informe um número de cartão válido.');
-      if (!cardData.name.trim()) return toast.error('Informe o nome impresso no cartão.');
-      if (!cardData.expiry || cardData.expiry.length < 5) return toast.error('Informe a validade do cartão (MM/AA).');
-      if (!cardData.cvv || cardData.cvv.length < 3) return toast.error('Informe o código CVV.');
+      if (!cleanNum || cleanNum.length < 13) {
+        return toast.error('Informe o número do cartão.');
+      }
+      if (!validateCardNumber(cleanNum)) {
+        return toast.error('Número de cartão inválido. Verifique os dígitos digitados.');
+      }
+      if (!cardData.name.trim() || cardData.name.trim().length < 3) {
+        return toast.error('Informe o nome impresso no cartão completo.');
+      }
+      if (!validateCardExpiry(cardData.expiry)) {
+        return toast.error('Data de validade inválida ou cartão expirado. Formato MM/AA.');
+      }
+      if (!validateCardCVV(cardData.cvv)) {
+        return toast.error('Código CVV inválido (deve conter 3 ou 4 dígitos).');
+      }
     }
 
     try {
@@ -921,7 +990,14 @@ export default function OnboardingWizard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Número do Cartão *</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-gray-700">Número do Cartão *</label>
+                      {getCardBrand(cardData.number) && (
+                        <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          {getCardBrand(cardData.number)}
+                        </span>
+                      )}
+                    </div>
                     <div className="relative">
                       <FaCreditCard className="absolute left-4 top-3.5 text-gray-400 text-sm" />
                       <input

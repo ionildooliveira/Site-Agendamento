@@ -1,4 +1,10 @@
 const { MercadoPagoConfig, Payment, PreApproval, CardToken } = require('mercadopago');
+const {
+  validateCardNumber,
+  validateCardExpiry,
+  validateCardCVV,
+  getCardBrand,
+} = require('./cardValidator');
 
 function getMPClient() {
   const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
@@ -98,6 +104,32 @@ async function createCardPayment({
   isDebit = false,
   metadata = {},
 }) {
+  // 1. Validação estrita dos dados do cartão se fornecidos
+  if (card && card.cardNumber) {
+    const rawNum = String(card.cardNumber).replace(/\D/g, '');
+    if (!validateCardNumber(rawNum)) {
+      return {
+        status: 'rejected',
+        status_detail: 'cc_rejected_bad_filled_card_number',
+        error: 'Número de cartão inválido. O número digitado não passou no algoritmo de verificação (Luhn).',
+      };
+    }
+    if (!validateCardExpiry(card.cardExpiration)) {
+      return {
+        status: 'rejected',
+        status_detail: 'cc_rejected_bad_filled_date',
+        error: 'Data de validade do cartão inválida ou cartão expirado.',
+      };
+    }
+    if (!validateCardCVV(card.securityCode)) {
+      return {
+        status: 'rejected',
+        status_detail: 'cc_rejected_bad_filled_security_code',
+        error: 'Código de segurança (CVV) inválido.',
+      };
+    }
+  }
+
   const client = getMPClient();
 
   if (client) {
@@ -131,16 +163,16 @@ async function createCardPayment({
             token = tokenRes.id;
           }
 
-          // Detecta a bandeira do cartão se não informada
           if (!paymentMethodId || paymentMethodId === 'credit_card' || paymentMethodId === 'debit_card') {
-            if (rawNum.startsWith('4')) paymentMethodId = 'visa';
-            else if (rawNum.startsWith('5') || rawNum.startsWith('2')) paymentMethodId = 'master';
-            else if (rawNum.startsWith('34') || rawNum.startsWith('37')) paymentMethodId = 'amex';
-            else if (rawNum.startsWith('6')) paymentMethodId = 'elo';
-            else paymentMethodId = 'visa';
+            paymentMethodId = getCardBrand(rawNum);
           }
         } catch (tokenErr) {
           console.warn('⚠️ Erro ao gerar CardToken no Mercado Pago:', tokenErr.message);
+          return {
+            status: 'rejected',
+            status_detail: 'cc_rejected_bad_filled_other',
+            error: 'Dados do cartão recusados pelo Mercado Pago. Verifique os dados e tente novamente.',
+          };
         }
       }
 
@@ -178,10 +210,24 @@ async function createCardPayment({
       }
     } catch (error) {
       console.warn('⚠️ Erro ao chamar API do Mercado Pago (Cartão):', error.message);
+      return {
+        status: 'rejected',
+        status_detail: 'cc_rejected_other',
+        error: error.message || 'Pagamento recusado pelo Mercado Pago.',
+      };
     }
   }
 
-  // Modo Local de Desenvolvimento / Simulação
+  // Se não há cliente configurado e o cartão não foi informado
+  if (!card || !card.cardNumber) {
+    return {
+      status: 'rejected',
+      status_detail: 'cc_rejected_bad_filled_other',
+      error: 'Dados do cartão não fornecidos.',
+    };
+  }
+
+  // Modo Local de Desenvolvimento / Simulação para cartões que passaram no teste de Luhn
   const testId = `mp_${isDebit ? 'debit' : 'card'}_sim_` + Date.now();
   return {
     id: testId,
