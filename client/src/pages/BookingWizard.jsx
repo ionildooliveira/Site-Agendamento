@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, Link, useParams } from 'react-router-dom';
 import { servicesAPI, professionalsAPI, availabilityAPI, bookingsAPI } from '../services/api';
 import { getSalonSettings } from '../services/salonSettings';
+import { getNicheData } from '../constants/niches';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,6 +21,13 @@ export default function BookingWizard() {
   const [salon, setSalon] = useState(getSalonSettings());
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const nicheKey = salon.niche || 
+    (/barbearia|barber/i.test(salon.name || '') ? 'barbearia' : 
+     /estetica|spa|clinica/i.test(salon.name || '') ? 'estetica' : 
+     /esmalte|unha|nail/i.test(salon.name || '') ? 'esmalteria' : 'salao');
+  const nicheConfig = getNicheData(nicheKey);
+  const theme = nicheConfig.theme;
 
   useEffect(() => {
     const updateSalon = () => setSalon(getSalonSettings());
@@ -201,19 +209,19 @@ export default function BookingWizard() {
   });
 
   return (
-    <div className="min-h-screen bg-[#FFF8FA] font-sans text-[#4A323D] flex flex-col">
+    <div className={`min-h-screen ${theme.pageBg} font-sans ${theme.pageText} flex flex-col`}>
       <PublicNavbar />
 
       {/* Header Banner */}
-      <section className="pt-28 pb-10 bg-gradient-to-b from-[#FFF0F6] to-[#FFF8FA] border-b border-[#F5D8E3]">
+      <section className={`pt-28 pb-10 ${theme.isDark ? 'bg-[#18181B] border-zinc-800' : 'bg-gradient-to-b from-white to-gray-50/50 border-gray-100'} border-b`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#D47FA6] bg-white px-3.5 py-1.5 rounded-full shadow-sm">
+          <span className={`text-xs font-semibold uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-sm ${theme.badgeClass}`}>
             Agendamento 24h
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#4A323D] mt-3">
+          <h1 className={`text-3xl sm:text-4xl font-extrabold ${theme.headingColor} mt-3`}>
             Agendar Horário Online
           </h1>
-          <p className="text-gray-600 mt-2 text-sm max-w-xl mx-auto">
+          <p className="text-gray-500 mt-2 text-sm max-w-xl mx-auto">
             Siga as 4 etapas simples abaixo para escolher seu serviço, profissional, data, horário e confirmar em instantes.
           </p>
         </div>
@@ -223,7 +231,7 @@ export default function BookingWizard() {
       <section className="flex-1 py-10 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Progress Bar (4 steps) */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#F5D8E3] mb-8">
+          <div className={`${theme.cardBg} rounded-2xl p-6 shadow-sm border ${theme.cardBorder} mb-8`}>
             <div className="flex items-center justify-between relative">
               {[
                 { s: 1, label: 'Etapa 1', title: 'Serviço', icon: <FaCut /> },
@@ -238,9 +246,9 @@ export default function BookingWizard() {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                         isActive
-                          ? 'bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white shadow-md ring-4 ring-[#FDF2F7]'
+                          ? `${theme.buttonClass} text-white shadow-md ring-4 ring-black/5`
                           : isCompleted
-                          ? 'bg-[#E8A5C8] text-white'
+                          ? `${theme.accentBg} ${theme.accentText} border ${theme.accentBorder}`
                           : 'bg-gray-100 text-gray-400 border border-gray-200'
                       }`}
                     >
@@ -248,14 +256,14 @@ export default function BookingWizard() {
                     </div>
                     <span
                       className={`text-[10px] uppercase font-semibold mt-2 tracking-wider ${
-                        isActive ? 'text-[#D47FA6]' : isCompleted ? 'text-[#6B4E5A]' : 'text-gray-400'
+                        isActive ? theme.accentText : isCompleted ? (theme.isDark ? 'text-zinc-300' : 'text-gray-700') : 'text-gray-400'
                       }`}
                     >
                       {item.label}
                     </span>
                     <span
                       className={`text-xs font-bold ${
-                        isActive ? 'text-[#4A323D]' : 'text-gray-500'
+                        isActive ? theme.headingColor : 'text-gray-400'
                       }`}
                     >
                       {item.title}
@@ -267,11 +275,11 @@ export default function BookingWizard() {
           </div>
 
           {/* Main Card */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg border border-[#F5D8E3] relative">
+          <div className={`${theme.cardBg} rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg border ${theme.cardBorder} relative`}>
             {loading && (
               <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-30 rounded-3xl flex flex-col items-center justify-center gap-3">
-                <div className="w-10 h-10 border-4 border-[#D47FA6] border-t-transparent rounded-full animate-spin" />
-                <p className="text-xs font-bold uppercase tracking-wider text-[#D47FA6]">Carregando horários...</p>
+                <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: theme.primaryColor, borderTopColor: 'transparent' }} />
+                <p className={`text-xs font-bold uppercase tracking-wider ${theme.accentText}`}>Carregando horários...</p>
               </div>
             )}
 
@@ -285,9 +293,9 @@ export default function BookingWizard() {
                   exit={{ opacity: 0, y: -15 }}
                   className="space-y-6"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100/20 pb-4">
                     <div>
-                      <h2 className="text-xl font-bold text-[#4A323D]">1. Escolha o Serviço Desejado</h2>
+                      <h2 className={`text-xl font-bold ${theme.headingColor}`}>1. Escolha o Serviço Desejado</h2>
                       <p className="text-xs text-gray-500">Selecione o procedimento na lista abaixo</p>
                     </div>
 
@@ -300,7 +308,7 @@ export default function BookingWizard() {
                           placeholder="Buscar..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-8 pr-3 py-1.5 text-xs rounded-full border border-gray-200 focus:outline-none focus:border-[#D47FA6]"
+                          className={`pl-8 pr-3 py-1.5 text-xs rounded-full border border-gray-200 focus:outline-none ${theme.searchFocus} ${theme.isDark ? 'bg-zinc-800 text-white' : 'bg-gray-50/50'}`}
                         />
                       </div>
                     </div>
@@ -314,8 +322,8 @@ export default function BookingWizard() {
                         onClick={() => setSelectedCategory(cat)}
                         className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                           selectedCategory === cat
-                            ? 'bg-[#D47FA6] text-white shadow-sm'
-                            : 'bg-gray-100 text-[#6B4E5A] hover:bg-gray-200'
+                            ? `${theme.buttonClass} text-white shadow-sm`
+                            : (theme.isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
                         }`}
                       >
                         {cat}
@@ -331,30 +339,30 @@ export default function BookingWizard() {
                         onClick={() => handleSelectService(svc)}
                         className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${
                           selectedService?.id === svc.id
-                            ? 'border-[#D47FA6] bg-[#FFF0F6] ring-2 ring-[#D47FA6]/30 shadow-md'
-                            : 'border-gray-200 bg-white hover:border-[#D47FA6] hover:shadow-sm'
+                            ? `border-2 ${theme.cardBorder} ${theme.accentBg} ring-2 ring-black/5 shadow-md`
+                            : `border-gray-200 ${theme.cardBg} hover:shadow-sm`
                         }`}
                       >
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FDF2F7] text-[#D47FA6]">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${theme.tagClass}`}>
                               {svc.category || 'Geral'}
                             </span>
-                            <span className="text-xs text-gray-500 flex items-center gap-1 font-medium">
-                              <FaClock className="text-[#D47FA6]" /> {svc.duration_minutes} min
+                            <span className="text-xs text-gray-400 flex items-center gap-1 font-medium">
+                              <FaClock className={theme.clockIcon} /> {svc.duration_minutes} min
                             </span>
                           </div>
-                          <h3 className="font-bold text-base text-[#4A323D]">{svc.name}</h3>
+                          <h3 className={`font-bold text-base ${theme.headingColor}`}>{svc.name}</h3>
                           <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
                             {svc.description}
                           </p>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                          <span className="text-lg font-extrabold text-[#6B4E5A]">
+                        <div className="mt-4 pt-3 border-t border-gray-100/20 flex items-center justify-between">
+                          <span className={`text-lg font-extrabold ${theme.accentPrice}`}>
                             R$ {Number(svc.price || 0).toFixed(2).replace('.', ',')}
                           </span>
-                          <span className="text-xs font-semibold text-[#D47FA6] flex items-center gap-1">
+                          <span className={`text-xs font-semibold ${theme.accentText} flex items-center gap-1`}>
                             Selecionar <FaArrowRight />
                           </span>
                         </div>
@@ -373,18 +381,18 @@ export default function BookingWizard() {
                   exit={{ opacity: 0, y: -15 }}
                   className="space-y-8"
                 >
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                  <div className="flex items-center justify-between border-b border-gray-100/20 pb-4">
                     <div>
-                      <h2 className="text-xl font-bold text-[#4A323D]">2. Profissional, Data e Horário</h2>
+                      <h2 className={`text-xl font-bold ${theme.headingColor}`}>2. Profissional, Data e Horário</h2>
                       <p className="text-xs text-gray-500">
                         Serviço selecionado:{' '}
-                        <span className="font-bold text-[#D47FA6]">{selectedService?.name}</span> (R${' '}
+                        <span className={`font-bold ${theme.accentText}`}>{selectedService?.name}</span> (R${' '}
                         {Number(selectedService?.price || 0).toFixed(2).replace('.', ',')})
                       </p>
                     </div>
                     <button
                       onClick={() => setStep(1)}
-                      className="text-xs text-gray-500 hover:text-[#D47FA6] flex items-center gap-1 font-medium"
+                      className={`text-xs text-gray-500 hover:${theme.accentText} flex items-center gap-1 font-medium`}
                     >
                       <FaArrowLeft /> Trocar serviço
                     </button>
@@ -392,7 +400,7 @@ export default function BookingWizard() {
 
                   {/* 2A: Escolha do Profissional */}
                   <div>
-                    <h3 className="text-sm font-bold text-[#4A323D] uppercase tracking-wider mb-3">
+                    <h3 className={`text-sm font-bold ${theme.headingColor} uppercase tracking-wider mb-3`}>
                       Selecione o(a) Profissional
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -402,16 +410,16 @@ export default function BookingWizard() {
                           onClick={() => setSelectedProfessional(pro)}
                           className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                             selectedProfessional?.id === pro.id
-                              ? 'border-[#D47FA6] bg-[#FFF0F6] ring-2 ring-[#D47FA6]/30 shadow-md'
-                              : 'border-gray-200 bg-white hover:border-[#D47FA6]'
+                              ? `border-2 ${theme.cardBorder} ${theme.accentBg} ring-2 ring-black/5 shadow-md`
+                              : `border-gray-200 ${theme.cardBg} hover:shadow-sm`
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#E8A5C8] to-[#D47FA6] flex items-center justify-center text-white font-bold text-lg shrink-0">
+                            <div className={`w-12 h-12 rounded-full ${theme.navbarIconBg} flex items-center justify-center text-white font-bold text-lg shrink-0`}>
                               {pro.name.charAt(0)}
                             </div>
                             <div>
-                              <h4 className="font-bold text-sm text-[#4A323D]">{pro.name}</h4>
+                              <h4 className={`font-bold text-sm ${theme.headingColor}`}>{pro.name}</h4>
                               <p className="text-xs text-gray-500">{pro.role}</p>
                             </div>
                           </div>
@@ -423,7 +431,7 @@ export default function BookingWizard() {
                   {/* 2B: Escolha da Data */}
                   {selectedProfessional && (
                     <div className="pt-2">
-                      <h3 className="text-sm font-bold text-[#4A323D] uppercase tracking-wider mb-3">
+                      <h3 className={`text-sm font-bold ${theme.headingColor} uppercase tracking-wider mb-3`}>
                         Selecione a Data
                       </h3>
                       <input
@@ -431,7 +439,7 @@ export default function BookingWizard() {
                         min={new Date().toISOString().split('T')[0]}
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full sm:w-64 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-medium focus:outline-none focus:border-[#D47FA6] bg-white shadow-sm"
+                        className={`w-full sm:w-64 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-medium focus:outline-none ${theme.searchFocus} ${theme.isDark ? 'bg-zinc-800 text-white' : 'bg-white'} shadow-sm`}
                       />
                     </div>
                   )}
@@ -439,13 +447,13 @@ export default function BookingWizard() {
                   {/* 2C: Escolha do Horário */}
                   {selectedProfessional && selectedDate && (
                     <div className="pt-2">
-                      <h3 className="text-sm font-bold text-[#4A323D] uppercase tracking-wider mb-3">
+                      <h3 className={`text-sm font-bold ${theme.headingColor} uppercase tracking-wider mb-3`}>
                         Horários Disponíveis ({slots.length})
                       </h3>
                       {slots.length === 0 ? (
-                        <div className="p-6 rounded-2xl bg-[#FFF8FA] border border-[#F5D8E3] text-center">
-                          <FaInfoCircle className="text-[#D47FA6] text-xl mx-auto mb-2" />
-                          <p className="text-sm font-medium text-[#6B4E5A]">
+                        <div className={`p-6 rounded-2xl ${theme.infoCardBg} text-center`}>
+                          <FaInfoCircle className={`${theme.infoCardIcon} text-xl mx-auto mb-2`} />
+                          <p className={`text-sm font-medium ${theme.accentPrice}`}>
                             {availabilityMsg || 'Nenhum horário disponível para esta data ou profissional.'}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">Por favor, selecione outra data.</p>
@@ -462,8 +470,8 @@ export default function BookingWizard() {
                                 onClick={() => setSelectedTime(timeStr)}
                                 className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
                                   selectedTime === timeStr
-                                    ? 'bg-[#D47FA6] text-white shadow-md scale-105'
-                                    : 'bg-gray-100 hover:bg-[#FFF0F6] hover:text-[#D47FA6] text-[#4A323D]'
+                                    ? `${theme.buttonClass} text-white shadow-md scale-105`
+                                    : (theme.isDark ? 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700')
                                 }`}
                               >
                                 {timeStr}
@@ -475,11 +483,11 @@ export default function BookingWizard() {
                     </div>
                   )}
 
-                  <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+                  <div className="pt-6 border-t border-gray-100/20 flex items-center justify-between">
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition"
+                      className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-500 font-semibold text-sm hover:bg-black/5 transition"
                     >
                       Voltar
                     </button>
@@ -487,7 +495,7 @@ export default function BookingWizard() {
                       type="button"
                       onClick={handleProceedToStep3}
                       disabled={!selectedProfessional || !selectedDate || !selectedTime}
-                      className="inline-flex items-center gap-2 px-7 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-sm shadow-md hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`inline-flex items-center gap-2 px-7 py-2.5 rounded-xl ${theme.buttonClass} text-white font-semibold text-sm shadow-md hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       <span>Avançar para Seus Dados</span>
                       <FaArrowRight className="text-xs" />
@@ -505,38 +513,38 @@ export default function BookingWizard() {
                   exit={{ opacity: 0, y: -15 }}
                   className="space-y-6"
                 >
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                  <div className="flex items-center justify-between border-b border-gray-100/20 pb-4">
                     <div>
-                      <h2 className="text-xl font-bold text-[#4A323D]">3. Preencha Seus Dados</h2>
+                      <h2 className={`text-xl font-bold ${theme.headingColor}`}>3. Preencha Seus Dados</h2>
                       <p className="text-xs text-gray-500">
                         Para enviarmos a confirmação e identificarmos sua reserva
                       </p>
                     </div>
                     <button
                       onClick={() => setStep(2)}
-                      className="text-xs text-gray-500 hover:text-[#D47FA6] flex items-center gap-1 font-medium"
+                      className={`text-xs text-gray-500 hover:${theme.accentText} flex items-center gap-1 font-medium`}
                     >
                       <FaArrowLeft /> Alterar data/hora
                     </button>
                   </div>
 
                   {/* Summary bar */}
-                  <div className="p-4 rounded-2xl bg-[#FFF8FA] border border-[#F5D8E3] flex flex-wrap items-center justify-between gap-4 text-xs">
+                  <div className={`p-4 rounded-2xl ${theme.infoCardBg} flex flex-wrap items-center justify-between gap-4 text-xs`}>
                     <div>
                       <span className="text-gray-400 block">Serviço & Profissional</span>
-                      <span className="font-bold text-[#4A323D]">
+                      <span className={`font-bold ${theme.headingColor}`}>
                         {selectedService?.name} • {selectedProfessional?.name}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-400 block">Data & Horário</span>
-                      <span className="font-bold text-[#D47FA6]">
+                      <span className={`font-bold ${theme.accentText}`}>
                         {selectedDate ? selectedDate.split('-').reverse().join('/') : ''} às {selectedTime}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-400 block">Valor</span>
-                      <span className="font-bold text-[#6B4E5A]">
+                      <span className={`font-bold ${theme.accentPrice}`}>
                         R$ {Number(selectedService?.price || 0).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
@@ -544,7 +552,7 @@ export default function BookingWizard() {
 
                   <form onSubmit={handleSubmitBooking} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-[#4A323D] mb-1">
+                      <label className={`block text-xs font-bold ${theme.headingColor} mb-1`}>
                         Nome Completo *
                       </label>
                       <input
@@ -553,13 +561,13 @@ export default function BookingWizard() {
                         placeholder="Ex: Maria Silva"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-[#D47FA6]"
+                        className={`w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none ${theme.searchFocus} ${theme.isDark ? 'bg-zinc-800 text-white' : 'bg-white'}`}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-[#4A323D] mb-1">
+                        <label className={`block text-xs font-bold ${theme.headingColor} mb-1`}>
                           Telefone / WhatsApp *
                         </label>
                         <input
@@ -568,11 +576,11 @@ export default function BookingWizard() {
                           placeholder="(11) 99999-8888"
                           value={clientPhone}
                           onChange={(e) => setClientPhone(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-[#D47FA6]"
+                          className={`w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none ${theme.searchFocus} ${theme.isDark ? 'bg-zinc-800 text-white' : 'bg-white'}`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#4A323D] mb-1">
+                        <label className={`block text-xs font-bold ${theme.headingColor} mb-1`}>
                           E-mail *
                         </label>
                         <input
@@ -581,36 +589,36 @@ export default function BookingWizard() {
                           placeholder="seuemail@exemplo.com"
                           value={clientEmail}
                           onChange={(e) => setClientEmail(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-[#D47FA6]"
+                          className={`w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none ${theme.searchFocus} ${theme.isDark ? 'bg-zinc-800 text-white' : 'bg-white'}`}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#4A323D] mb-1">
-                        Observações para o Salão (Opcional)
+                      <label className={`block text-xs font-bold ${theme.headingColor} mb-1`}>
+                        Observações para o Estabelecimento (Opcional)
                       </label>
                       <textarea
                         rows={3}
                         placeholder="Ex: Preferência de corte, alergias a produtos, etc."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-[#D47FA6]"
+                        className={`w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none ${theme.searchFocus} ${theme.isDark ? 'bg-zinc-800 text-white' : 'bg-white'}`}
                       />
                     </div>
 
-                    <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+                    <div className="pt-6 border-t border-gray-100/20 flex items-center justify-between">
                       <button
                         type="button"
                         onClick={() => setStep(2)}
-                        className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition"
+                        className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-500 font-semibold text-sm hover:bg-black/5 transition"
                       >
                         Voltar
                       </button>
                       <button
                         type="submit"
                         disabled={loading}
-                        className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-sm shadow-lg hover:shadow-xl transition"
+                        className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl ${theme.buttonClass} text-white font-semibold text-sm shadow-lg hover:shadow-xl transition`}
                       >
                         <span>Confirmar Agendamento</span>
                         <FaCheckCircle className="text-xs" />
@@ -633,53 +641,53 @@ export default function BookingWizard() {
                   </div>
 
                   <div>
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#FDF2F7] text-[#D47FA6]">
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${theme.badgeClass}`}>
                       Agendamento Confirmado!
                     </span>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-[#4A323D] mt-2">
+                    <h2 className={`text-2xl sm:text-3xl font-extrabold ${theme.headingColor} mt-2`}>
                       Tudo Pronto para Cuidar de Você
                     </h2>
-                    <p className="text-sm text-gray-600 max-w-md mx-auto mt-1">
+                    <p className="text-sm text-gray-500 max-w-md mx-auto mt-1">
                       Seu horário está reservado com sucesso no {salon.name}.
                     </p>
                   </div>
 
                   {/* Resumo do Agendamento */}
-                  <div className="max-w-md mx-auto bg-[#FFF8FA] rounded-2xl p-6 border border-[#F5D8E3] text-left space-y-3 shadow-sm">
-                    <div className="flex justify-between items-center border-b border-[#F5D8E3] pb-3">
-                      <span className="text-xs text-gray-500 uppercase font-semibold">Código da Reserva</span>
-                      <span className="text-sm font-mono font-bold bg-white px-3 py-1 rounded-lg border border-[#F5D8E3] text-[#D47FA6]">
+                  <div className={`max-w-md mx-auto ${theme.infoCardBg} rounded-2xl p-6 text-left space-y-3 shadow-sm`}>
+                    <div className="flex justify-between items-center border-b border-gray-200/40 pb-3">
+                      <span className="text-xs text-gray-400 uppercase font-semibold">Código da Reserva</span>
+                      <span className={`text-sm font-mono font-bold bg-white px-3 py-1 rounded-lg border ${theme.cardBorder} ${theme.accentText}`}>
                         #{confirmedBooking.id}
                       </span>
                     </div>
 
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Serviço:</span>
-                      <span className="font-bold text-[#4A323D]">{confirmedBooking.service_name}</span>
+                      <span className="text-gray-400">Serviço:</span>
+                      <span className={`font-bold ${theme.headingColor}`}>{confirmedBooking.service_name}</span>
                     </div>
 
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Profissional:</span>
-                      <span className="font-bold text-[#4A323D]">{confirmedBooking.professional_name}</span>
+                      <span className="text-gray-400">Profissional:</span>
+                      <span className={`font-bold ${theme.headingColor}`}>{confirmedBooking.professional_name}</span>
                     </div>
 
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Data:</span>
-                      <span className="font-bold text-[#4A323D]">
+                      <span className="text-gray-400">Data:</span>
+                      <span className={`font-bold ${theme.headingColor}`}>
                         {confirmedBooking.booking_date ? confirmedBooking.booking_date.split('-').reverse().join('/') : ''}
                       </span>
                     </div>
 
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Horário:</span>
-                      <span className="font-bold text-[#D47FA6]">
+                      <span className="text-gray-400">Horário:</span>
+                      <span className={`font-bold ${theme.accentText}`}>
                         {confirmedBooking.start_time} às {confirmedBooking.end_time}
                       </span>
                     </div>
 
-                    <div className="flex justify-between text-base pt-3 border-t border-[#F5D8E3]">
-                      <span className="font-bold text-[#4A323D]">Valor:</span>
-                      <span className="font-extrabold text-[#6B4E5A]">
+                    <div className="flex justify-between text-base pt-3 border-t border-gray-200/40">
+                      <span className={`font-bold ${theme.headingColor}`}>Valor:</span>
+                      <span className={`font-extrabold ${theme.accentPrice}`}>
                         R$ {Number(confirmedBooking.service_price || 0).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
@@ -688,11 +696,11 @@ export default function BookingWizard() {
                   {cancelToken && (
                     <div className="max-w-md mx-auto bg-gray-50 rounded-xl p-3 border border-gray-200 text-xs text-gray-500">
                       <span>Token de alteração/cancelamento: </span>
-                      <span className="font-mono font-bold text-[#D47FA6]">{cancelToken}</span>
+                      <span className={`font-mono font-bold ${theme.accentText}`}>{cancelToken}</span>
                     </div>
                   )}
 
-                  {/* Actions required by specification */}
+                  {/* Actions */}
                   <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto pt-2">
                     <a
                       href={buildWhatsappConfirmationUrl()}
@@ -706,7 +714,7 @@ export default function BookingWizard() {
 
                     <Link
                       to={`/${companySlug}`}
-                      className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-[#D47FA6] text-[#D47FA6] font-semibold text-sm hover:bg-[#FFF0F6] transition-all flex-1"
+                      className={`inline-flex items-center justify-center px-6 py-3.5 rounded-xl border-2 ${theme.outlineButton} font-semibold text-sm transition-all flex-1`}
                     >
                       Voltar ao Início
                     </Link>

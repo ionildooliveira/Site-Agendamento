@@ -1,5 +1,9 @@
 node_modules/
 .env
+.env.*
+*.env
 dist/
 .DS_Store
 data/
+source_code.md
+codigo_fonte.html

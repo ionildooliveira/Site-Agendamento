@@ -26,6 +26,7 @@ Cada pasta neste diretório representa uma **Skill no padrão Antigravity / AI A
 | **14** | [`subscription-lifecycle-and-access-control`](./14-subscription-lifecycle-and-access-control/SKILL.md) | Ciclo de vida de assinaturas, bloqueio automático por vencimento e monitoramento. |
 | **15** | [`production-deployment-and-ci-cd`](./15-production-deployment-and-ci-cd/SKILL.md) | Procedimento de deploy em produção, pipeline CI/CD GitHub/Vercel e checklist. |
 | **16** | [`pricing-plans-and-grandfathering`](./16-pricing-plans-and-grandfathering/SKILL.md) | Estratégia de precificação, proteção de preço antigo (Grandfathering) e reajustes. |
+| **17** | [`niche-customization-and-theming`](./17-niche-customization-and-theming/SKILL.md) | Arquitetura multi-nicho, estilização dinâmica por segmento, CSS tokens e seeding. |
 
 ---
 

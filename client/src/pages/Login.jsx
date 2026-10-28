@@ -74,27 +74,30 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream to-blush flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
       
       {/* Background blobs for premium styling */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-rose/15 blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full bg-gold/10 blur-[120px]"></div>
+      <div 
+        className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full blur-[120px] opacity-20 pointer-events-none"
+        style={{ backgroundColor: 'var(--theme-primary, #059669)' }}
+      ></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full bg-slate-300/40 blur-[120px] pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10 animate-fade-in">
         
         {/* Back Link */}
-        <Link to={`/${companySlug || ''}`} className="inline-flex items-center gap-2 text-mink/70 hover:text-rose-dark text-xs font-bold uppercase tracking-wider mb-8 transition-colors">
+        <Link to={`/${companySlug || ''}`} className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 text-xs font-bold uppercase tracking-wider mb-8 transition-colors">
           <FaChevronLeft className="text-xs" /> Voltar para o Agendamento
         </Link>
 
         {/* Card */}
-        <div className="card-glass p-8 md:p-10 shadow-glass border border-white/50 bg-white/75 relative">
+        <div className="card-glass p-8 md:p-10 shadow-glass border border-slate-200/80 bg-white/90 relative rounded-3xl">
           
           {!isRecovering ? (
             <>
               <div className="text-center mb-8 animate-fade-in">
                 <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">Acesso Administrativo</h1>
-                <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Faça login para gerenciar a agenda, profissionais e serviços do {salon.name || 'Studio Beauty'}.</p>
+                <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Faça login para gerenciar a agenda, profissionais e serviços do {salon.name || 'I.O.S AgendeJá'}.</p>
               </div>
 
               <form onSubmit={handleLogin} className="flex flex-col gap-5 animate-fade-in">
@@ -110,7 +113,7 @@ export default function Login() {
                       className="input !pl-11 text-xs"
                       disabled={loading}
                     />
-                    <FaEnvelope className="absolute left-4 top-4 text-rose-dark text-xs" />
+                    <FaEnvelope className="absolute left-4 top-4 text-xs" style={{ color: 'var(--theme-primary)' }} />
                   </div>
                 </div>
 
@@ -120,7 +123,8 @@ export default function Login() {
                     <button 
                       type="button" 
                       onClick={() => setIsRecovering(true)}
-                      className="text-[10px] text-rose-dark hover:text-primary font-semibold transition-colors"
+                      className="text-[10px] font-semibold transition-colors cursor-pointer"
+                      style={{ color: 'var(--theme-primary)' }}
                     >
                       Esqueceu a senha?
                     </button>
@@ -135,13 +139,13 @@ export default function Login() {
                       className="input !pl-11 text-xs"
                       disabled={loading}
                     />
-                    <FaLock className="absolute left-4 top-4 text-rose-dark text-xs" />
+                    <FaLock className="absolute left-4 top-4 text-xs" style={{ color: 'var(--theme-primary)' }} />
                   </div>
                 </div>
 
                 <button 
                   type="submit" 
-                  className="btn-primary w-full py-3.5 mt-3 text-xs uppercase tracking-wider font-semibold"
+                  className="btn-primary w-full py-3.5 mt-3 text-xs uppercase tracking-wider font-semibold cursor-pointer"
                   disabled={loading}
                 >
                   {loading ? (
@@ -152,9 +156,9 @@ export default function Login() {
                 </button>
 
                 <div className="text-center pt-2 border-t border-gray-100">
-                  <span className="text-[11px] text-gray-500">Quer cadastrar seu próprio salão? </span>
-                  <Link to="/cadastro" className="text-[11px] text-[#D47FA6] hover:underline font-bold">
-                    Criar meu salão agora
+                  <span className="text-[11px] text-gray-500">Quer cadastrar sua própria empresa? </span>
+                  <Link to="/cadastro" className="text-[11px] hover:underline font-bold" style={{ color: 'var(--theme-primary)' }}>
+                    Criar conta agora
                   </Link>
                 </div>
               </form>
@@ -181,7 +185,7 @@ export default function Login() {
                       className="input !pl-11 text-xs"
                       disabled={loading}
                     />
-                    <FaEnvelope className="absolute left-4 top-4 text-rose-dark text-xs" />
+                    <FaEnvelope className="absolute left-4 top-4 text-xs" style={{ color: 'var(--theme-primary)' }} />
                   </div>
                 </div>
 

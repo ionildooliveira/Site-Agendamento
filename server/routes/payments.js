@@ -73,16 +73,22 @@ async function provisionSalonAndUser({ userData, salonData, paymentData, payment
   const nextBillingDate = new Date();
   nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
+  const nicheKey = salonData.niche || 'barbearia';
+
   const settingsPayload = {
     id: Date.now(),
     company_id: company.id,
     slot_interval: 30,
     salon_data: {
       name: salonData.name,
-      slogan: salonData.slogan || 'Elegância, cuidado & sofisticação para sua beleza',
+      niche: nicheKey,
+      badge: salonData.badge || (nicheKey === 'barbearia' ? 'Barbearia & Estética Masculina' : 'Salão de Beleza & Estética Premium'),
+      slogan: salonData.slogan || (nicheKey === 'barbearia' ? 'Cortes modernos, barba alinhada e estilo de respeito' : 'Elegância, cuidado & sofisticação para sua beleza'),
       description:
         salonData.description ||
-        'Um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta com profissionais altamente especializados.',
+        (nicheKey === 'barbearia'
+          ? 'Espaço exclusivo dedicado ao cuidado masculino. Cortes clássicos e modernos, barboterapia tradicional com toalha quente e profissionais experientes.'
+          : 'Um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta com profissionais altamente especializados.'),
       address: salonData.address || '',
       cityState: salonData.cityState || '',
       cep: salonData.cep || '',
@@ -91,7 +97,9 @@ async function provisionSalonAndUser({ userData, salonData, paymentData, payment
       workingHoursText: salonData.workingHoursText || 'Segunda a Sexta: 09h às 19h | Sábado: 09h às 17h',
       heroImage:
         salonData.heroImage ||
-        'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80',
+        (nicheKey === 'barbearia'
+          ? 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1920&q=80'
+          : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80'),
       subscription: {
         status: 'active',
         plan: planName,
@@ -143,6 +151,66 @@ async function provisionSalonAndUser({ userData, salonData, paymentData, payment
   } catch (subErr) {
     // Tolerante caso o script SQL de assinaturas ainda não tenha sido rodado
     console.log('Tabela subscriptions não encontrada ou ignorada:', subErr.message);
+  }
+
+  // 5. Criar Profissional e Serviços Iniciais adequados ao Nicho
+  try {
+    let proRole = 'Profissional Master';
+    let proSpecialties = ['Atendimento Geral'];
+    let starterServices = [];
+
+    if (nicheKey === 'barbearia') {
+      proRole = 'Barbeiro Master';
+      proSpecialties = ['Corte Fade', 'Barboterapia', 'Degradê'];
+      starterServices = [
+        { name: 'Corte Fade / Degradê', price: 45.0, duration_minutes: 35, category: 'Cabelo' },
+        { name: 'Barboterapia com Toalha Quente', price: 35.0, duration_minutes: 30, category: 'Barba' },
+        { name: 'Combo Cabelo + Barba', price: 75.0, duration_minutes: 55, category: 'Combos' },
+      ];
+    } else if (nicheKey === 'esmalteria') {
+      proRole = 'Nail Designer Master';
+      proSpecialties = ['Alongamento em Fibra', 'Nail Art', 'Esmaltação em Gel'];
+      starterServices = [
+        { name: 'Alongamento em Fibra de Vidro', price: 160.0, duration_minutes: 120, category: 'Extensão' },
+        { name: 'Manutenção de Alongamento', price: 95.0, duration_minutes: 90, category: 'Manutenção' },
+        { name: 'Esmaltação em Gel', price: 65.0, duration_minutes: 50, category: 'Unhas' },
+      ];
+    } else if (nicheKey === 'estetica') {
+      proRole = 'Esteticista & Terapeuta';
+      proSpecialties = ['Limpeza de Pele', 'Massagem Relaxante', 'Drenagem'];
+      starterServices = [
+        { name: 'Limpeza de Pele Profunda', price: 140.0, duration_minutes: 75, category: 'Facial' },
+        { name: 'Massagem Relaxante', price: 130.0, duration_minutes: 60, category: 'Corporal' },
+        { name: 'Drenagem Linfática', price: 110.0, duration_minutes: 50, category: 'Corporal' },
+      ];
+    } else {
+      proRole = 'Cabeleireira & Visagista';
+      proSpecialties = ['Mechas', 'Cortes', 'Tratamentos'];
+      starterServices = [
+        { name: 'Corte Feminino & Escova', price: 90.0, duration_minutes: 60, category: 'Cabelo' },
+        { name: 'Mechas & Iluminação', price: 280.0, duration_minutes: 180, category: 'Coloração' },
+        { name: 'Cronograma Capilar', price: 130.0, duration_minutes: 75, category: 'Tratamentos' },
+      ];
+    }
+
+    await supabase.from('professionals').insert([
+      {
+        name: userData.name,
+        role: proRole,
+        specialties: proSpecialties,
+        company_id: company.id,
+        active: true,
+      },
+    ]);
+
+    const servicesPayload = starterServices.map(s => ({
+      ...s,
+      company_id: company.id,
+      active: true,
+    }));
+    await supabase.from('services').insert(servicesPayload);
+  } catch (seedErr) {
+    console.warn('Erro ao criar serviços/profissional iniciais:', seedErr.message);
   }
 
   // 5. Gerar Token JWT de autenticação imediata
@@ -366,6 +434,10 @@ router.get('/status/:paymentId', async (req, res) => {
 
 // ─── ROTA 4: Simulação de Aprovação para Ambiente Local ────────────────────────
 router.post('/simulate-approval', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Endpoint desabilitado em ambiente de produção.' });
+  }
+
   try {
     const { paymentId } = req.body;
     const session = pendingRegistrations.get(String(paymentId));

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { settingsAPI, professionalsAPI, authAPI, paymentsAPI } from '../../services/api';
-import { getSalonSettings, saveSalonSettings, generateWorkingHoursText } from '../../services/salonSettings';
+import { getSalonSettings, saveSalonSettings, syncSalonSettings, generateWorkingHoursText } from '../../services/salonSettings';
+import { getNicheData } from '../../constants/niches';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -55,15 +56,19 @@ export default function AdminSettings() {
   const loadSettingsAndBlockedDates = async () => {
     try {
       setLoading(true);
-      const [sets, blocks, pros] = await Promise.all([
+      const [sets, blocks, pros, syncedSalon] = await Promise.all([
         settingsAPI.get(),
         settingsAPI.getBlockedDates(),
-        professionalsAPI.getAll('all')
+        professionalsAPI.getAll('all'),
+        syncSalonSettings()
       ]);
       setWorkingHours(sets.working_hours || {});
       setSlotInterval(sets.slot_interval || 30);
       setBlockedDates(blocks || []);
       setProfessionals(pros || []);
+      if (syncedSalon) {
+        setSalonData(syncedSalon);
+      }
     } catch (err) {
       console.error(err);
       toast.error('Erro ao carregar configurações');
@@ -75,15 +80,19 @@ export default function AdminSettings() {
   useEffect(() => {
     async function initSettings() {
       try {
-        const [sets, blocks, pros] = await Promise.all([
+        const [sets, blocks, pros, syncedSalon] = await Promise.all([
           settingsAPI.get(),
           settingsAPI.getBlockedDates(),
-          professionalsAPI.getAll('all')
+          professionalsAPI.getAll('all'),
+          syncSalonSettings()
         ]);
         setWorkingHours(sets.working_hours || {});
         setSlotInterval(sets.slot_interval || 30);
         setBlockedDates(blocks || []);
         setProfessionals(pros || []);
+        if (syncedSalon) {
+          setSalonData(syncedSalon);
+        }
         paymentsAPI.getSubscription().then(setSubscription).catch(() => {});
       } catch (err) {
         console.error(err);
@@ -333,26 +342,28 @@ export default function AdminSettings() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('salon')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'salon'
-              ? 'bg-[#D47FA6] text-white shadow-sm'
+              ? 'text-white shadow-xs'
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
+          style={activeTab === 'salon' ? { background: 'var(--theme-gradient)' } : {}}
         >
           <FaStore />
-          <span>Salão & WhatsApp</span>
+          <span>Empresa & WhatsApp</span>
         </button>
 
         <button
           onClick={() => setActiveTab('hours')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'hours'
-              ? 'bg-[#D47FA6] text-white shadow-sm'
+              ? 'text-white shadow-xs'
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
+          style={activeTab === 'hours' ? { background: 'var(--theme-gradient)' } : {}}
         >
           <FaClock />
           <span>Horários & Intervalos</span>
@@ -360,11 +371,12 @@ export default function AdminSettings() {
 
         <button
           onClick={() => setActiveTab('blocked')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'blocked'
-              ? 'bg-[#D47FA6] text-white shadow-sm'
+              ? 'text-white shadow-xs'
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
+          style={activeTab === 'blocked' ? { background: 'var(--theme-gradient)' } : {}}
         >
           <FaCalendarMinus />
           <span>Datas Bloqueadas</span>
@@ -372,11 +384,12 @@ export default function AdminSettings() {
 
         <button
           onClick={() => setActiveTab('security')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'security'
-              ? 'bg-[#D47FA6] text-white shadow-sm'
+              ? 'text-white shadow-xs'
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
+          style={activeTab === 'security' ? { background: 'var(--theme-gradient)' } : {}}
         >
           <FaLock />
           <span>Acesso</span>
@@ -384,11 +397,12 @@ export default function AdminSettings() {
 
         <button
           onClick={() => setActiveTab('subscription')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'subscription'
-              ? 'bg-[#D47FA6] text-white shadow-sm'
+              ? 'text-white shadow-xs'
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
+          style={activeTab === 'subscription' ? { background: 'var(--theme-gradient)' } : {}}
         >
           <FaCreditCard />
           <span>Assinatura & Plano</span>
@@ -411,9 +425,9 @@ export default function AdminSettings() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Nome do Salão</label>
+              <label className="block text-xs font-bold text-[#4A323D] mb-1">Nome do Estabelecimento</label>
               <input
                 type="text"
                 required
@@ -422,6 +436,35 @@ export default function AdminSettings() {
                 onChange={(e) => setSalonData({ ...salonData, name: e.target.value })}
                 className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
               />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-[#4A323D]">Segmento / Nicho</label>
+                <span className="text-[10px] text-gray-500 font-medium bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                  Fixo no plano
+                </span>
+              </div>
+              <select
+                disabled
+                value={
+                  salonData.niche ||
+                  (/estetica|spa/i.test(salonData.name)
+                    ? 'estetica'
+                    : /barbearia|barber/i.test(salonData.name)
+                    ? 'barbearia'
+                    : /esmalte|unha/i.test(salonData.name)
+                    ? 'esmalteria'
+                    : 'salao')
+                }
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 bg-gray-100 text-gray-600 font-medium cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed"
+                title="O segmento do estabelecimento foi definido na contratação do plano."
+              >
+                <option value="barbearia">💈 Barbearia</option>
+                <option value="salao">💇‍♀️ Salão de Beleza</option>
+                <option value="esmalteria">💅 Esmalteria & Nails</option>
+                <option value="estetica">🌿 Estética & Spa</option>
+              </select>
             </div>
 
             <div>
@@ -564,10 +607,11 @@ export default function AdminSettings() {
           <div className="pt-4 border-t border-gray-100 flex justify-end">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-sm shadow hover:shadow-md transition"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm shadow hover:shadow-md transition cursor-pointer"
+              style={{ background: 'var(--theme-gradient)' }}
             >
               <FaSave />
-              <span>Salvar Configurações do Salão</span>
+              <span>Salvar Configurações</span>
             </button>
           </div>
         </form>
@@ -651,7 +695,8 @@ export default function AdminSettings() {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-sm shadow hover:shadow-md transition"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm shadow hover:shadow-md transition cursor-pointer"
+              style={{ background: 'var(--theme-gradient)' }}
             >
               <FaSave />
               <span>{saving ? 'Salvando...' : 'Salvar Grade de Horários'}</span>
@@ -707,7 +752,8 @@ export default function AdminSettings() {
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-sm shadow hover:shadow-md transition"
+              className="w-full py-2.5 rounded-xl text-white font-semibold text-sm shadow hover:shadow-md transition cursor-pointer"
+              style={{ background: 'var(--theme-gradient)' }}
             >
               Adicionar Bloqueio
             </button>
@@ -815,7 +861,8 @@ export default function AdminSettings() {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-sm shadow hover:shadow-md transition"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm shadow hover:shadow-md transition cursor-pointer"
+              style={{ background: 'var(--theme-gradient)' }}
             >
               <FaSave />
               <span>{saving ? 'Salvando...' : 'Salvar e Fazer Login Novamente'}</span>

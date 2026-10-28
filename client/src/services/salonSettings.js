@@ -5,6 +5,8 @@ const getStorageKey = () => `studio_beauty_salon_settings_${getCurrentTenantId()
 
 const defaultSettings = {
   name: 'Studio Beauty',
+  niche: 'salao',
+  badge: 'Salão de Beleza & Estética Premium',
   slogan: 'Elegância, cuidado & sofisticação para sua beleza',
   description: 'O Studio Beauty é um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta para cabelos, unhas e estética com profissionais altamente especializados.',
   cep: '',

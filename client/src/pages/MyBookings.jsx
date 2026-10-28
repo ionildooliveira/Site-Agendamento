@@ -301,7 +301,7 @@ export default function MyBookings() {
                         <div className="flex gap-2.5 w-full md:w-auto mt-2 md:mt-0">
                           <button 
                             onClick={() => setReviewBooking(booking)}
-                            className="btn-outline border-[#D47FA6] text-[#D47FA6] hover:bg-[#D47FA6] hover:text-white text-xs px-5 py-2.5 rounded-full flex-1 md:flex-none justify-center cursor-pointer"
+                            className="btn-outline text-xs px-5 py-2.5 rounded-full flex-1 md:flex-none justify-center cursor-pointer"
                           >
                             Deixar Depoimento
                           </button>

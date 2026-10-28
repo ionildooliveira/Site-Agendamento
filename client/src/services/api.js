@@ -24,35 +24,61 @@ export const getCurrentTenantSlug = () => currentTenantSlug;
 api.interceptors.request.use(
   (config) => {
     let slug = currentTenantSlug;
-    if (!slug) {
-       // fallback if slug not set but we have admin data
-       const adminData = localStorage.getItem('studio_beauty_admin');
-       if (adminData) {
-         try {
-            const admin = JSON.parse(adminData);
-            if (admin.company_slug) slug = admin.company_slug;
-         } catch(e){}
-       }
+    if (!slug && typeof window !== 'undefined' && window.location) {
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      if (parts.length > 0 && !['cadastro', 'super-admin', 'login', 'redefinir-senha'].includes(parts[0])) {
+        slug = parts[0];
+      }
     }
-    
-    // Use the slug to get the correct token
-    const token = slug ? localStorage.getItem(`studio_beauty_token_${slug}`) : null;
-    
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    
+
+    let token = slug ? localStorage.getItem(`studio_beauty_token_${slug}`) : null;
     let tenantId = currentTenantId;
-    if (!tenantId) {
-      const adminData = localStorage.getItem('studio_beauty_admin');
-      if (adminData) {
+
+    if (slug) {
+      const scopedAdmin = localStorage.getItem(`studio_beauty_admin_${slug}`);
+      if (scopedAdmin && !tenantId) {
         try {
-          const admin = JSON.parse(adminData);
-          if (admin.company_id) {
-            tenantId = admin.company_id;
+          const parsed = JSON.parse(scopedAdmin);
+          if (parsed.company_id) tenantId = parsed.company_id;
+        } catch (e) {}
+      }
+    }
+
+    // Generic fallback if slug-based key was not found
+    if (!token && typeof window !== 'undefined') {
+      const globalAdmin = localStorage.getItem('studio_beauty_admin');
+      if (globalAdmin) {
+        try {
+          const parsed = JSON.parse(globalAdmin);
+          if (parsed.company_id && !tenantId) tenantId = parsed.company_id;
+          if (parsed.company_slug && !token) {
+            token = localStorage.getItem(`studio_beauty_token_${parsed.company_slug}`);
           }
         } catch (e) {}
       }
+      
+      // If still no token, scan for any active admin token
+      if (!token) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('studio_beauty_token_')) {
+            token = localStorage.getItem(k);
+            const adminK = k.replace('token', 'admin');
+            const aData = localStorage.getItem(adminK);
+            if (aData && !tenantId) {
+              try {
+                const a = JSON.parse(aData);
+                if (a.company_id) tenantId = a.company_id;
+              } catch (e) {}
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
 
     if (tenantId) {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { companiesAPI, setTenantId } from '../services/api';
-import { syncSalonSettings } from '../services/salonSettings';
+import { syncSalonSettings, getSalonSettings } from '../services/salonSettings';
+import { getNicheData } from '../constants/niches';
 import toast from 'react-hot-toast';
 import BlockedCompany from '../pages/BlockedCompany';
 
@@ -12,6 +13,23 @@ export default function TenantLayout() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
 
+  const applyNicheStyles = (settings, companyName) => {
+    const nicheKey = settings?.niche || 
+      (/barbearia|barber/i.test(companyName || settings?.name || '') ? 'barbearia' : 
+       /estetica|spa|clinica/i.test(companyName || settings?.name || '') ? 'estetica' : 
+       /esmalte|unha|nail/i.test(companyName || settings?.name || '') ? 'esmalteria' : 'salao');
+    const nicheData = getNicheData(nicheKey);
+    const theme = nicheData?.theme;
+    if (theme) {
+      const root = document.documentElement;
+      root.style.setProperty('--theme-primary', theme.primaryColor);
+      root.style.setProperty('--theme-primary-dark', theme.primaryDark);
+      root.style.setProperty('--theme-primary-light', theme.primaryLight);
+      root.style.setProperty('--theme-gradient', `linear-gradient(135deg, ${theme.primaryColor} 0%, ${theme.primaryDark} 100%)`);
+      root.style.setProperty('--theme-shadow', `${theme.primaryColor}35`);
+    }
+  };
+
   useEffect(() => {
     async function fetchTenant() {
       try {
@@ -19,9 +37,9 @@ export default function TenantLayout() {
         const company = await companiesAPI.getBySlug(companySlug);
         setTenantId(company.id, companySlug);
         
-        await syncSalonSettings();
+        const settings = await syncSalonSettings();
+        applyNicheStyles(settings || getSalonSettings(), company.name);
         
-        // Temporarily store company name or data if needed
         document.title = company.name;
       } catch (error) {
         console.error('Error fetching tenant:', error);
@@ -44,6 +62,14 @@ export default function TenantLayout() {
     } else {
       setLoading(false);
     }
+
+    const handleSettingsUpdated = () => {
+      applyNicheStyles(getSalonSettings());
+    };
+    window.addEventListener('salonSettingsUpdated', handleSettingsUpdated);
+    return () => {
+      window.removeEventListener('salonSettingsUpdated', handleSettingsUpdated);
+    };
   }, [companySlug, navigate]);
 
   if (loading) {

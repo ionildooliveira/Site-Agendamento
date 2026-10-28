@@ -150,7 +150,7 @@ export default function AdminServices() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-rose-light/10 text-xs text-gray-400 font-semibold uppercase">
+                <tr className="border-b border-slate-100 text-xs text-gray-400 font-semibold uppercase">
                   <th className="py-2.5">Nome</th>
                   <th className="py-2.5">Categoria</th>
                   <th className="py-2.5"><FaClock className="inline mr-1" /> Duração</th>
@@ -161,7 +161,7 @@ export default function AdminServices() {
               </thead>
               <tbody className="text-sm">
                 {services.map((s) => (
-                  <tr key={s.id} className={`border-b border-rose-light/10 hover:bg-rose-light/5 ${!s.active ? 'opacity-50' : ''}`}>
+                  <tr key={s.id} className={`border-b border-slate-100 hover:bg-slate-50 ${!s.active ? 'opacity-50' : ''}`}>
                     <td className="py-3">
                       <div>
                         <p className="font-bold text-gray-900">{s.name}</p>
@@ -169,7 +169,15 @@ export default function AdminServices() {
                       </div>
                     </td>
                     <td className="py-3">
-                      <span className="badge-rose">{s.category || 'Outros'}</span>
+                      <span 
+                        className="text-xs px-2.5 py-1 rounded-full font-medium"
+                        style={{
+                          backgroundColor: 'var(--theme-primary-light, #f1f5f9)',
+                          color: 'var(--theme-primary, #059669)',
+                        }}
+                      >
+                        {s.category || 'Outros'}
+                      </span>
                     </td>
                     <td className="py-3 font-medium text-gray-700">{s.duration_minutes} min</td>
                     <td className="py-3 font-bold text-gray-900">R$ {s.price.toFixed(2)}</td>
@@ -182,7 +190,7 @@ export default function AdminServices() {
                       <div className="flex justify-end gap-1">
                         <button 
                           onClick={() => handleOpenModal(s)}
-                          className="p-2 text-gold-dark hover:bg-gold-light/10 rounded-lg"
+                          className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors"
                           title="Editar"
                         >
                           <FaEdit />
@@ -190,7 +198,7 @@ export default function AdminServices() {
                         {s.active && (
                           <button 
                             onClick={() => handleDelete(s.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
                             title="Desativar"
                           >
                             <FaTrash />
@@ -209,15 +217,15 @@ export default function AdminServices() {
       {/* SERVICE MODAL */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-glass border border-rose-light/20 max-w-lg w-full p-6 animate-scale-up flex flex-col gap-4">
-            <div className="flex justify-between items-center border-b border-rose-light/20 pb-3">
-              <h3 className="text-lg font-bold text-mink font-heading">
+          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-glass border border-slate-200 max-w-lg w-full p-6 animate-scale-up flex flex-col gap-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-800 font-heading">
                 {editingService ? 'Editar Serviço' : 'Novo Serviço'}
               </h3>
               <button 
                 type="button"
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+                className="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer"
               >
                 &times;
               </button>

@@ -3,7 +3,7 @@ import { adminAPI, bookingsAPI, professionalsAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { 
   FaCalendarAlt, FaChevronLeft, FaChevronRight, FaTrashAlt, 
-  FaUserTie, FaPhoneAlt, FaEnvelope, FaSpinner
+  FaUserTie, FaPhoneAlt, FaEnvelope, FaSpinner, FaExclamationTriangle, FaTimes
 } from 'react-icons/fa';
 
 export default function AdminAgenda() {
@@ -17,6 +17,10 @@ export default function AdminAgenda() {
 
   const [professionals, setProfessionals] = useState([]);
   const [selectedProFilter, setSelectedProFilter] = useState('all');
+
+  // Deletion modal state
+  const [bookingToDelete, setBookingToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Load professionals for filter dropdown
   useEffect(() => {
@@ -57,6 +61,7 @@ export default function AdminAgenda() {
 
     return () => clearInterval(interval);
   }, [view, currentDate]);
+
   // Navigate dates
   const handleNavigate = (direction) => {
     const d = new Date(currentDate + 'T00:00:00');
@@ -72,20 +77,21 @@ export default function AdminAgenda() {
     setCurrentDate(d.toISOString().split('T')[0]);
   };
 
-  const handleCancelBooking = async (id) => {
-    const confirmCancel = window.confirm('Deseja realmente cancelar este agendamento?');
-    if (!confirmCancel) return;
+  const handleConfirmDelete = async () => {
+    if (!bookingToDelete) return;
 
     try {
-      setLoading(true);
-      await bookingsAPI.delete(id);
-      toast.success('Agendamento cancelado');
+      setDeleting(true);
+      await bookingsAPI.delete(bookingToDelete.id);
+      toast.success('Agendamento excluído com sucesso');
+      setBookingToDelete(null);
       await fetchAgenda();
     } catch (err) {
-      console.error(err);
-      toast.error('Erro ao cancelar agendamento');
+      console.error('Erro ao excluir agendamento:', err);
+      const msg = err.response?.data?.error || 'Erro ao cancelar agendamento';
+      toast.error(msg);
     } finally {
-      setLoading(false);
+      setDeleting(false);
     }
   };
 
@@ -107,7 +113,7 @@ export default function AdminAgenda() {
   // Filter bookings locally by selected professional
   const filteredBookings = selectedProFilter === 'all'
     ? bookings
-    : bookings.filter(b => b.professional_id.toString() === selectedProFilter);
+    : bookings.filter(b => b.professional_id?.toString() === selectedProFilter);
 
   return (
     <div className="animate-fade-in flex flex-col gap-6">
@@ -129,11 +135,12 @@ export default function AdminAgenda() {
             <button 
               key={v.id}
               onClick={() => { setView(v.id); setCurrentDate(new Date().toISOString().split('T')[0]); }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 view === v.id 
-                  ? 'bg-gradient-rose-gold text-white shadow-rose' 
-                  : 'text-gray-600 hover:text-rose-dark'
+                  ? 'text-white shadow-xs' 
+                  : 'text-gray-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
+              style={view === v.id ? { background: 'var(--theme-gradient)' } : {}}
             >
               {v.label}
             </button>
@@ -142,26 +149,30 @@ export default function AdminAgenda() {
       </div>
 
       {/* Date Navigator Controls & Filters */}
-      <div className="card p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="card p-4 flex flex-col sm:flex-row justify-between items-center gap-4 border border-slate-200/80 shadow-xs">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => handleNavigate('prev')}
-            className="p-2 rounded-lg border hover:bg-rose-light/10 text-gray-600 transition-colors"
+            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-gray-600 transition-colors cursor-pointer"
           >
             <FaChevronLeft />
           </button>
-          <span className="font-heading font-bold text-mink text-lg select-none min-w-[150px] text-center">
+          <span className="font-heading font-bold text-slate-800 text-lg select-none min-w-[150px] text-center">
             {getHeaderDateLabel()}
           </span>
           <button 
             onClick={() => handleNavigate('next')}
-            className="p-2 rounded-lg border hover:bg-rose-light/10 text-gray-600 transition-colors"
+            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-gray-600 transition-colors cursor-pointer"
           >
             <FaChevronRight />
           </button>
           <button 
             onClick={() => setCurrentDate(new Date().toISOString().split('T')[0])}
-            className="text-xs font-semibold text-rose-dark bg-blush px-3 py-1.5 rounded-lg hover:shadow-sm"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg hover:shadow-xs cursor-pointer transition-colors"
+            style={{
+              backgroundColor: 'var(--theme-primary-light, #f1f5f9)',
+              color: 'var(--theme-primary, #059669)',
+            }}
           >
             Hoje
           </button>
@@ -169,13 +180,13 @@ export default function AdminAgenda() {
 
         {/* Filters */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label className="text-xs font-bold text-mink whitespace-nowrap flex items-center gap-1">
+          <label className="text-xs font-bold text-slate-700 whitespace-nowrap flex items-center gap-1">
             <FaUserTie /> Filtrar Profissional:
           </label>
           <select 
             value={selectedProFilter}
             onChange={(e) => setSelectedProFilter(e.target.value)}
-            className="input text-xs py-1.5 w-full sm:w-48"
+            className="input text-xs py-1.5 w-full sm:w-48 cursor-pointer"
           >
             <option value="all">Todos</option>
             {professionals.map(p => (
@@ -187,24 +198,24 @@ export default function AdminAgenda() {
 
       {/* LOADING INDICATOR */}
       {loading ? (
-        <div className="card p-12 text-center flex flex-col items-center justify-center gap-4 min-h-[300px]">
-          <FaSpinner className="text-3xl text-rose-dark animate-spin" />
+        <div className="card p-12 text-center flex flex-col items-center justify-center gap-4 min-h-[300px] border border-slate-200/80">
+          <FaSpinner className="text-3xl animate-spin" style={{ color: 'var(--theme-primary)' }} />
           <p className="text-sm text-gray-500 font-semibold">Buscando agendamentos...</p>
         </div>
       ) : (
         /* Agenda Table / List */
-        <div className="card p-6 min-h-[350px]">
+        <div className="card p-6 min-h-[350px] border border-slate-200/80 shadow-xs">
           {filteredBookings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <FaCalendarAlt className="text-5xl text-rose-light mb-3" />
-              <h3 className="text-lg font-bold text-mink mb-1">Nenhum compromisso</h3>
+              <FaCalendarAlt className="text-5xl text-slate-300 mb-3" />
+              <h3 className="text-lg font-bold text-slate-800 mb-1">Nenhum compromisso</h3>
               <p className="text-sm">Não há nenhum agendamento registrado para este período.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-rose-light/10 text-xs text-gray-400 font-semibold uppercase">
+                  <tr className="border-b border-slate-100 text-xs text-gray-400 font-semibold uppercase">
                     <th className="py-2.5">Data & Hora</th>
                     <th className="py-2.5">Cliente</th>
                     <th className="py-2.5">Serviço</th>
@@ -216,36 +227,49 @@ export default function AdminAgenda() {
                 </thead>
                 <tbody className="text-sm">
                   {filteredBookings.map((b) => (
-                    <tr key={b.id} className="border-b border-rose-light/10 hover:bg-rose-light/5">
+                    <tr key={b.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                       <td className="py-3">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-rose-dark">{b.start_time} - {b.end_time}</span>
+                          <span className="font-semibold" style={{ color: 'var(--theme-primary)' }}>{b.start_time} - {b.end_time}</span>
                           <span className="text-[10px] text-gray-400">{b.booking_date.split('-').reverse().join('/')}</span>
                         </div>
                       </td>
                       <td className="py-3">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-gray-900">{b.client_name}</span>
-                          <span className="text-[10px] text-gray-400 flex items-center gap-1"><FaPhoneAlt className="text-[8px]" /> {b.client_phone}</span>
-                          <span className="text-[10px] text-gray-400 flex items-center gap-1"><FaEnvelope className="text-[8px]" /> {b.client_email}</span>
+                          <span className="font-semibold text-gray-900">{b.client_name || 'Cliente'}</span>
+                          {b.client_phone && (
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                              <FaPhoneAlt className="text-[8px]" /> {b.client_phone}
+                            </span>
+                          )}
+                          {b.client_email && (
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                              <FaEnvelope className="text-[8px]" /> {b.client_email}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="py-3">
                         <div className="flex flex-col">
                           <span className="font-bold text-gray-800">{b.service_name}</span>
-                          <span className="text-[10px] text-gray-400">{b.service_category} ({b.duration_minutes} min)</span>
+                          <span className="text-[10px] text-gray-400">
+                            {b.service_category ? `${b.service_category} • ` : ''}{b.duration_minutes} min
+                          </span>
                         </div>
                       </td>
                       <td className="py-3 font-semibold text-gray-700">{b.professional_name}</td>
                       <td className="py-3 text-xs text-gray-500 max-w-xs truncate" title={b.notes}>
                         {b.notes || <span className="text-gray-300 italic">Nenhuma</span>}
                       </td>
-                      <td className="py-3 text-right font-bold text-gray-900">R$ {b.service_price.toFixed(2)}</td>
+                      <td className="py-3 text-right font-bold text-gray-900">
+                        R$ {Number(b.service_price || 0).toFixed(2)}
+                      </td>
                       <td className="py-3 text-center">
                         <button 
-                          onClick={() => handleCancelBooking(b.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg hover:text-red-700 transition-colors"
-                          title="Cancelar Agendamento"
+                          type="button"
+                          onClick={() => setBookingToDelete(b)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg hover:text-red-700 transition-colors cursor-pointer"
+                          title="Cancelar e Excluir Agendamento"
                         >
                           <FaTrashAlt />
                         </button>
@@ -256,6 +280,73 @@ export default function AdminAgenda() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      {bookingToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-scale-up">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0 text-xl">
+                <FaExclamationTriangle />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-slate-900">Cancelar Agendamento?</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Tem certeza que deseja cancelar e excluir este agendamento? O horário será liberado imediatamente para novos clientes.
+                </p>
+
+                <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Cliente:</span>
+                    <span className="font-bold text-slate-800">{bookingToDelete.client_name || 'Cliente'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Serviço:</span>
+                    <span className="font-semibold text-slate-800">{bookingToDelete.service_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Profissional:</span>
+                    <span className="font-semibold text-slate-800">{bookingToDelete.professional_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Data & Horário:</span>
+                    <span className="font-bold" style={{ color: 'var(--theme-primary, #059669)' }}>
+                      {bookingToDelete.booking_date?.split('-').reverse().join('/')} às {bookingToDelete.start_time}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setBookingToDelete(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <FaSpinner className="animate-spin text-xs" /> Excluindo...
+                  </>
+                ) : (
+                  <>
+                    <FaTrashAlt className="text-xs" /> Sim, Cancelar Agendamento
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

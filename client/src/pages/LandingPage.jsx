@@ -12,6 +12,7 @@ import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
 import GallerySection from '../components/GallerySection';
 import { getSalonSettings } from '../services/salonSettings';
 import { servicesAPI, testimonialsAPI } from '../services/api';
+import { getNicheData } from '../constants/niches';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -20,6 +21,14 @@ export default function LandingPage() {
   const [services, setServices] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const nicheKey = salon.niche || 
+    (/barbearia|barber/i.test(salon.name || '') ? 'barbearia' : 
+     /estetica|spa|clinica/i.test(salon.name || '') ? 'estetica' : 
+     /esmalte|unha|nail/i.test(salon.name || '') ? 'esmalteria' : 'salao');
+  const nicheConfig = getNicheData(nicheKey);
+  const theme = nicheConfig.theme;
+  const isBarber = nicheKey === 'barbearia';
 
   useEffect(() => {
     const updateSalon = () => setSalon(getSalonSettings());
@@ -74,7 +83,7 @@ export default function LandingPage() {
   const mapEmbedUrl = `https://www.google.com/maps?q=${mapAddressQuery}&output=embed`;
 
   return (
-    <div className="min-h-screen bg-[#FFF8FA] font-sans text-[#4A323D] flex flex-col">
+    <div className={`min-h-screen ${theme.pageBg} font-sans ${theme.pageText} flex flex-col transition-colors duration-300`}>
       <PublicNavbar />
 
       {/* Hero Section */}
@@ -86,7 +95,7 @@ export default function LandingPage() {
             alt="Hero Background"
             className="w-full h-full object-cover object-center transform scale-105 transition-transform duration-1000"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#2B1B22]/90 via-[#4A2D3A]/80 to-[#D47FA6]/60 backdrop-blur-[2px]" />
+          <div className={`absolute inset-0 bg-gradient-to-r ${theme.heroOverlay} backdrop-blur-[2px]`} />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,8 +106,8 @@ export default function LandingPage() {
               transition={{ duration: 0.6 }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-xs font-medium tracking-wide uppercase"
             >
-              <FaGem className="text-[#F5D8E3]" />
-              <span>Salão de Beleza & Estética Premium</span>
+              <span>{nicheConfig.icon}</span>
+              <span>{salon.badge || nicheConfig.badge}</span>
             </motion.div>
 
             <motion.h1
@@ -107,8 +116,8 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight"
             >
-              Sua beleza merece o cuidado do{' '}
-              <span className="bg-gradient-to-r from-[#FADCE6] via-white to-[#E8A5C8] bg-clip-text text-transparent">
+              {isBarber ? 'O melhor estilo e cuidado para você no ' : 'Sua experiência de cuidado no '}
+              <span className={`bg-gradient-to-r ${theme.heroSubtitleGradient} bg-clip-text text-transparent`}>
                 {salon.name}
               </span>
             </motion.h1>
@@ -119,7 +128,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg sm:text-xl text-gray-200 leading-relaxed max-w-2xl"
             >
-              {salon.slogan}. Agende online o seu horário com autonomia 24 horas por dia e viva uma experiência única de autocuidado.
+              {salon.slogan}. Agende online o seu horário com autonomia 24 horas por dia e viva uma experiência única.
             </motion.p>
 
             <motion.div
@@ -130,7 +139,7 @@ export default function LandingPage() {
             >
               <Link
                 to={`/${companySlug}/agendar`}
-                className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-semibold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                className={`inline-flex items-center gap-3 px-8 py-4 rounded-full ${theme.buttonClass} text-white font-semibold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300`}
               >
                 <FaCalendarAlt />
                 <span>Agendar Meu Horário Online</span>
@@ -153,11 +162,11 @@ export default function LandingPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{averageRating} ★</p>
-                <p className="text-xs text-gray-300">Avaliação das Clientes</p>
+                <p className="text-xs text-gray-300">{isBarber ? 'Avaliação dos Clientes' : 'Avaliação dos Clientes'}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">100%</p>
-                <p className="text-xs text-gray-300">Especialistas Qualificadas</p>
+                <p className="text-xs text-gray-300">Profissionais Qualificados</p>
               </div>
             </div>
           </div>
@@ -165,17 +174,17 @@ export default function LandingPage() {
       </section>
 
       {/* Featured Services Section */}
-      <section className="py-20 bg-white">
+      <section className={`py-20 ${theme.isDark ? 'bg-[#18181B]' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D47FA6] bg-[#FDF2F7] px-3 py-1 rounded-full">
+            <span className={`text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full ${theme.badgeClass}`}>
               Catálogo em Destaque
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#4A323D] mt-3">
+            <h2 className={`text-3xl sm:text-4xl font-bold ${theme.headingColor} mt-3`}>
               Serviços em Destaque
             </h2>
-            <p className="text-gray-600 mt-2">
-              Escolha entre nossos tratamentos exclusivos e agende seu horário com nossas especialistas em poucos cliques.
+            <p className="text-gray-500 mt-2">
+              Escolha entre nossos procedimentos exclusivos e agende seu horário com nossos especialistas em poucos cliques.
             </p>
           </div>
 
@@ -190,38 +199,38 @@ export default function LandingPage() {
               {featuredServices.map((svc) => (
                 <div
                   key={svc.id}
-                  className="bg-[#FFFBFD] rounded-2xl p-6 border border-[#F5D8E3]/60 hover:border-[#D47FA6] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                  className={`${theme.cardBg} rounded-2xl p-6 border ${theme.cardBorder} shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group ${theme.cardHover}`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#FDF2F7] text-[#D47FA6]">
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${theme.tagClass}`}>
                         {svc.category || 'Serviço'}
                       </span>
                       <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
-                        <FaClock className="text-[#D47FA6]" />
+                        <FaClock className={theme.clockIcon} />
                         {svc.duration_minutes} min
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-bold text-[#4A323D] group-hover:text-[#D47FA6] transition-colors">
+                    <h3 className={`text-xl font-bold ${theme.headingColor} group-hover:opacity-80 transition-colors`}>
                       {svc.name}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-3 leading-relaxed">
+                    <p className="text-sm text-gray-500 mt-2 line-clamp-3 leading-relaxed">
                       {svc.description || 'Atendimento profissional e personalizado para o seu bem-estar.'}
                     </p>
                   </div>
 
-                  <div className="mt-6 pt-5 border-t border-[#F5D8E3]/40 flex items-center justify-between">
+                  <div className="mt-6 pt-5 border-t border-gray-100/20 flex items-center justify-between">
                     <div>
                       <span className="text-xs text-gray-400 block">A partir de</span>
-                      <span className="text-2xl font-extrabold text-[#6B4E5A]">
+                      <span className={`text-2xl font-extrabold ${theme.accentPrice}`}>
                         R$ {Number(svc.price).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
 
                     <button
                       onClick={() => navigate(`/${companySlug}/agendar?serviceId=${svc.id}`)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white text-sm font-semibold shadow hover:shadow-md hover:scale-105 transition-all"
+                      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl ${theme.buttonClass} text-white text-sm font-semibold shadow hover:scale-105 transition-all`}
                     >
                       <span>Agendar</span>
                       <FaArrowRight className="text-xs" />
@@ -235,7 +244,7 @@ export default function LandingPage() {
           <div className="text-center mt-12">
             <Link
               to={`/${companySlug}/servicos`}
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border-2 border-[#D47FA6] text-[#D47FA6] font-semibold hover:bg-[#D47FA6] hover:text-white transition-all duration-300"
+              className={`inline-flex items-center gap-2 px-8 py-3.5 rounded-full border-2 ${theme.outlineButton} font-semibold transition-all duration-300`}
             >
               <span>Ver Todos os Serviços do Catálogo</span>
               <FaArrowRight className="text-xs" />
@@ -249,17 +258,17 @@ export default function LandingPage() {
 
       {/* Testimonials Section */}
       {testimonials.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-[#FFF8FA] to-white">
+        <section className={`py-20 ${theme.isDark ? 'bg-[#121214]' : 'bg-gradient-to-b from-white to-gray-50/50'}`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D47FA6] bg-[#FDF2F7] px-3 py-1 rounded-full">
+            <span className={`text-xs font-semibold uppercase tracking-widest ${theme.badgeClass} px-3 py-1 rounded-full`}>
               Depoimentos Reais
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#4A323D] mt-3">
-              O Que Nossas Clientes Dizem
+            <h2 className={`text-3xl sm:text-4xl font-bold ${theme.headingColor} mt-3`}>
+              O Que Nossos Clientes Dizem
             </h2>
-            <p className="text-gray-600 mt-2">
-              A satisfação de quem confia na nossa equipe para cuidar da sua beleza.
+            <p className="text-gray-500 mt-2">
+              A satisfação de quem confia na nossa equipe para cuidar do seu estilo e bem-estar.
             </p>
           </div>
 
@@ -267,7 +276,7 @@ export default function LandingPage() {
             {testimonials.map((t) => (
               <div
                 key={t.id}
-                className="bg-white rounded-2xl p-7 shadow-md border border-[#F5D8E3]/50 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300"
+                className={`${theme.cardBg} rounded-2xl p-7 shadow-md border ${theme.cardBorder} flex flex-col justify-between hover:-translate-y-1 transition-all duration-300`}
               >
                 <div>
                   <div className="flex items-center gap-1 text-amber-400 mb-4">
@@ -275,22 +284,23 @@ export default function LandingPage() {
                       <FaStar key={idx} />
                     ))}
                   </div>
-                  <p className="text-gray-600 text-sm italic leading-relaxed">
+                  <p className="text-gray-500 text-sm italic leading-relaxed">
                     "{t.comment}"
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center gap-3">
+                <div className="mt-6 pt-4 border-t border-gray-100/20 flex items-center gap-3">
                   <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.client?.name || 'Cliente')}&background=F5D8E3&color=D47FA6`}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.client?.name || 'Cliente')}&background=${theme.primaryLight.replace('#','')}&color=${theme.primaryColor.replace('#','')}`}
                     alt={t.client?.name || 'Cliente'}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-[#D47FA6]"
+                    className="w-12 h-12 rounded-full object-cover border-2"
+                    style={{ borderColor: theme.primaryColor }}
                   />
                   <div>
-                    <h4 className="font-bold text-sm text-[#4A323D]">{t.client?.name || 'Cliente'}</h4>
-                    <span className="text-xs text-gray-500 block">Cliente</span>
+                    <h4 className={`font-bold text-sm ${theme.headingColor}`}>{t.client?.name || 'Cliente'}</h4>
+                    <span className="text-xs text-gray-400 block">Cliente</span>
                     {t.service_name && (
-                      <span className="text-[11px] text-[#D47FA6] font-medium block mt-0.5">
+                      <span className={`text-[11px] ${theme.accentText} font-medium block mt-0.5`}>
                         {t.service_name}
                       </span>
                     )}
@@ -304,57 +314,57 @@ export default function LandingPage() {
       )}
 
       {/* Contact & Map Section */}
-      <section className="py-20 bg-white border-t border-[#F5D8E3]/50">
+      <section className={`py-20 ${theme.isDark ? 'bg-[#18181B] border-zinc-800' : 'bg-white border-gray-100'} border-t`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Info */}
             <div className="space-y-6">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#D47FA6] bg-[#FDF2F7] px-3 py-1 rounded-full">
+              <span className={`text-xs font-semibold uppercase tracking-widest ${theme.badgeClass} px-3 py-1 rounded-full`}>
                 Onde Estamos
               </span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#4A323D]">
+              <h2 className={`text-3xl sm:text-4xl font-bold ${theme.headingColor}`}>
                 Visite Nosso Espaço
               </h2>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-500 leading-relaxed">
                 Venha desfrutar do nosso ambiente planejado nos mínimos detalhes para o seu conforto e relaxamento.
               </p>
 
               <div className="space-y-4 pt-2">
-                <div className="flex items-start gap-4 p-4 rounded-2xl bg-[#FFF8FA] border border-[#F5D8E3]">
-                  <div className="p-3 rounded-xl bg-white text-[#D47FA6] shadow-sm">
+                <div className={`flex items-start gap-4 p-4 rounded-2xl ${theme.infoCardBg}`}>
+                  <div className={`p-3 rounded-xl bg-white ${theme.infoCardIcon} shadow-sm`}>
                     <FaMapMarkerAlt className="text-lg" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#4A323D] text-sm">Endereço</h4>
-                    <p className="text-sm text-gray-600 mt-0.5">{salon.address}</p>
-                    <p className="text-xs text-gray-500">{salon.cityState}</p>
+                    <h4 className={`font-bold ${theme.headingColor} text-sm`}>Endereço</h4>
+                    <p className="text-sm text-gray-500 mt-0.5">{salon.address}</p>
+                    <p className="text-xs text-gray-400">{salon.cityState}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-4 rounded-2xl bg-[#FFF8FA] border border-[#F5D8E3]">
+                <div className={`flex items-start gap-4 p-4 rounded-2xl ${theme.infoCardBg}`}>
                   <div className="p-3 rounded-xl bg-white text-[#25D366] shadow-sm">
                     <FaWhatsapp className="text-lg" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#4A323D] text-sm">Telefone e WhatsApp</h4>
+                    <h4 className={`font-bold ${theme.headingColor} text-sm`}>Telefone e WhatsApp</h4>
                     <a
-                      href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent('Olá, gostaria de falar com o salão.')}`}
+                      href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent('Olá, gostaria de falar com a equipe.')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-[#D47FA6] hover:underline font-medium mt-0.5 block"
+                      className={`text-sm ${theme.accentText} hover:underline font-medium mt-0.5 block`}
                     >
                       {formatPhoneDisplay(salon.whatsapp)}
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-4 rounded-2xl bg-[#FFF8FA] border border-[#F5D8E3]">
-                  <div className="p-3 rounded-xl bg-white text-[#E8A5C8] shadow-sm">
+                <div className={`flex items-start gap-4 p-4 rounded-2xl ${theme.infoCardBg}`}>
+                  <div className={`p-3 rounded-xl bg-white ${theme.infoCardIcon} shadow-sm`}>
                     <FaClock className="text-lg" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#4A323D] text-sm">Horário de Funcionamento</h4>
-                    <p className="text-sm text-gray-600 mt-0.5">{salon.workingHoursText}</p>
+                    <h4 className={`font-bold ${theme.headingColor} text-sm`}>Horário de Funcionamento</h4>
+                    <p className="text-sm text-gray-500 mt-0.5">{salon.workingHoursText}</p>
                   </div>
                 </div>
               </div>
@@ -363,7 +373,7 @@ export default function LandingPage() {
             {/* Right Map Visual / Interactive Embed */}
             <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gray-100 h-96 relative">
               <iframe
-                title="Localização do Salão"
+                title="Localização"
                 src={mapEmbedUrl}
                 width="100%"
                 height="100%"

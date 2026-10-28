@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { FaCalendarAlt, FaCut, FaLock, FaBars, FaTimes } from 'react-icons/fa';
+import { FaCalendarAlt, FaLock, FaBars, FaTimes } from 'react-icons/fa';
 import { getSalonSettings } from '../services/salonSettings';
+import { getNicheData } from '../constants/niches';
 
 export default function PublicNavbar() {
   const [salon, setSalon] = useState(getSalonSettings());
@@ -9,6 +10,13 @@ export default function PublicNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const { companySlug } = useParams();
+
+  const nicheKey = salon.niche || 
+    (/barbearia|barber/i.test(salon.name || '') ? 'barbearia' : 
+     /estetica|spa|clinica/i.test(salon.name || '') ? 'estetica' : 
+     /esmalte|unha|nail/i.test(salon.name || '') ? 'esmalteria' : 'salao');
+  const nicheConfig = getNicheData(nicheKey);
+  const theme = nicheConfig.theme;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,18 +44,18 @@ export default function PublicNavbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/90 backdrop-blur-md shadow-sm py-3.5 border-b border-[#F5D8E3]'
-          : 'bg-white/80 backdrop-blur-sm py-4'
+          ? (theme.isDark ? 'bg-[#18181B]/95 backdrop-blur-md shadow-sm py-3.5 border-b border-zinc-800' : 'bg-white/95 backdrop-blur-md shadow-sm py-3.5 border-b ' + theme.navbarBorder)
+          : (theme.isDark ? 'bg-[#121214]/80 backdrop-blur-sm py-4' : 'bg-white/80 backdrop-blur-sm py-4')
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link to={`/${companySlug}`} className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#E8A5C8] to-[#D47FA6] flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-            <FaCut className="text-lg" />
+          <div className={`w-10 h-10 rounded-full ${theme.navbarIconBg} flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform text-lg`}>
+            <span>{nicheConfig.icon}</span>
           </div>
           <div>
-            <span className="text-xl font-bold bg-gradient-to-r from-[#6B4E5A] to-[#D47FA6] bg-clip-text text-transparent block leading-tight">
+            <span className={`text-xl font-bold bg-gradient-to-r ${theme.navbarLogoText} bg-clip-text text-transparent block leading-tight`}>
               {salon.name}
             </span>
             <span className="text-[10px] text-gray-400 tracking-wider uppercase font-medium">
@@ -66,8 +74,8 @@ export default function PublicNavbar() {
                 to={item.path}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-[#FDF2F7] text-[#D47FA6] font-semibold'
-                    : 'text-[#6B4E5A] hover:bg-gray-50'
+                    ? theme.navbarActiveItem
+                    : (theme.isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-gray-700 hover:bg-gray-50')
                 }`}
               >
                 {item.name}
@@ -80,7 +88,7 @@ export default function PublicNavbar() {
         <div className="hidden md:flex items-center gap-3">
           <Link
             to={`/${companySlug}/admin`}
-            className="text-xs font-medium text-gray-500 hover:text-[#D47FA6] flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-50 transition"
+            className={`text-xs font-medium text-gray-400 hover:${theme.accentText} flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-black/5 transition`}
             title="Acesso Administrativo"
           >
             <FaLock className="text-xs" />
@@ -89,7 +97,7 @@ export default function PublicNavbar() {
 
           <Link
             to={`/${companySlug}/agendar`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-medium text-sm shadow-md hover:shadow-lg hover:brightness-105 transition-all transform hover:-translate-y-0.5"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full ${theme.buttonClass} text-white font-medium text-sm shadow-md transition-all transform hover:-translate-y-0.5`}
           >
             <FaCalendarAlt className="text-xs" />
             <span>Agendar Agora</span>
@@ -99,7 +107,7 @@ export default function PublicNavbar() {
         {/* Mobile menu toggle */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2 text-[#6B4E5A] hover:bg-gray-100 rounded-lg transition"
+          className={`md:hidden p-2 rounded-lg transition ${theme.isDark ? 'text-zinc-200 hover:bg-zinc-800' : 'text-gray-700 hover:bg-gray-100'}`}
           aria-label="Abrir menu"
         >
           {menuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
@@ -108,7 +116,7 @@ export default function PublicNavbar() {
 
       {/* Mobile Drawer */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-b border-[#F5D8E3] shadow-lg px-4 pt-3 pb-5 space-y-2 animate-fadeIn">
+        <div className={`md:hidden ${theme.isDark ? 'bg-[#18181B] border-zinc-800 text-zinc-100' : 'bg-white border-gray-100'} border-b shadow-lg px-4 pt-3 pb-5 space-y-2 animate-fadeIn`}>
           {navLinks.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -117,25 +125,25 @@ export default function PublicNavbar() {
                 to={item.path}
                 onClick={() => setMenuOpen(false)}
                 className={`block px-4 py-2.5 rounded-xl text-sm font-medium ${
-                  isActive ? 'bg-[#FDF2F7] text-[#D47FA6] font-semibold' : 'text-[#6B4E5A]'
+                  isActive ? theme.navbarActiveItem : (theme.isDark ? 'text-zinc-300' : 'text-gray-700')
                 }`}
               >
                 {item.name}
               </Link>
             );
           })}
-          <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
+          <div className="pt-3 border-t border-gray-200/20 flex flex-col gap-2">
             <Link
               to={`/${companySlug}/agendar`}
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] text-white font-medium text-sm shadow"
+              className={`w-full text-center py-3 rounded-xl ${theme.buttonClass} text-white font-medium text-sm shadow`}
             >
               Agendar Horário
             </Link>
             <Link
               to={`/${companySlug}/admin`}
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-2 text-xs text-gray-500 hover:text-[#D47FA6]"
+              className={`w-full text-center py-2 text-xs text-gray-400 hover:${theme.accentText}`}
             >
               Acesso ao Painel Administrativo
             </Link>

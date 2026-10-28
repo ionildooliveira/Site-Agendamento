@@ -39,7 +39,7 @@ export default function AdminClients() {
       </div>
 
       {/* Clients Table */}
-      <div className="card p-6">
+      <div className="card p-6 border border-slate-200/80 shadow-xs">
         {loading ? (
           <div className="text-center py-12">Carregando dados dos clientes...</div>
         ) : clients.length === 0 ? (
@@ -48,7 +48,7 @@ export default function AdminClients() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-rose-light/10 text-xs text-gray-400 font-semibold uppercase">
+                <tr className="border-b border-slate-100 text-xs text-gray-400 font-semibold uppercase">
                   <th className="py-2.5">Nome</th>
                   <th className="py-2.5">Telefone</th>
                   <th className="py-2.5">E-mail</th>
@@ -58,16 +58,16 @@ export default function AdminClients() {
               </thead>
               <tbody className="text-sm">
                 {clients.map((c) => (
-                  <tr key={c.id} className="border-b border-rose-light/10 hover:bg-rose-light/5">
+                  <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="py-3 font-bold text-gray-900">{c.name}</td>
                     <td className="py-3 text-gray-600">
-                      <span className="flex items-center gap-1.5"><FaPhoneAlt className="text-rose-dark text-xs" /> {c.phone}</span>
+                      <span className="flex items-center gap-1.5"><FaPhoneAlt className="text-slate-400 text-xs" /> {c.phone}</span>
                     </td>
                     <td className="py-3 text-gray-600">
-                      <span className="flex items-center gap-1.5"><FaEnvelope className="text-rose-dark text-xs" /> {c.email}</span>
+                      <span className="flex items-center gap-1.5"><FaEnvelope className="text-slate-400 text-xs" /> {c.email}</span>
                     </td>
                     <td className="py-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-gold-light/20 text-gold-dark border border-gold-light/15">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
                         <FaCalendarCheck /> {c.total_bookings}
                       </span>
                     </td>

@@ -37,8 +37,8 @@ router.get('/', authenticateAdmin, setTenantId, async (req, res) => {
   res.json(formattedClients);
 });
 
-// POST /api/clients (public or admin) - creates or finds client
-router.post('/', setTenantId, async (req, res) => {
+// POST /api/clients (admin only)
+router.post('/', authenticateAdmin, setTenantId, async (req, res) => {
   const { name, phone, email } = req.body;
   if (!name || !phone || !email) {
     return res.status(400).json({ error: 'Nome, telefone e email são obrigatórios' });

@@ -67,7 +67,10 @@ router.get('/salon-data', setTenantId, async (req, res) => {
   if (!data || !data.salon_data) return res.json({});
   
   const salonData = typeof data.salon_data === 'string' ? JSON.parse(data.salon_data) : data.salon_data;
-  res.json(salonData || {});
+  
+  // Sanitização de segurança: remove dados de assinatura/pagamento da resposta pública
+  const { subscription, ...publicSalonData } = (salonData || {});
+  res.json(publicSalonData);
 });
 
 // PUT /api/settings/salon-data (admin)
@@ -147,6 +150,11 @@ router.post('/upload-cover', authenticateAdmin, setTenantId, upload.single('imag
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+    }
+
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedMimes.includes(req.file.mimetype)) {
+      return res.status(400).json({ error: 'Formato de arquivo inválido. Permitido apenas JPG, PNG ou WEBP.' });
     }
 
     const supabase = getDB();

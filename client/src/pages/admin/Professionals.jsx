@@ -162,24 +162,29 @@ export default function AdminProfessionals() {
             return (
               <div 
                 key={p.id} 
-                className={`card p-6 flex flex-col gap-4 border border-rose-light/10 relative ${
-                  !p.active ? 'opacity-60 bg-gray-50/50' : ''
+                className={`card p-6 flex flex-col gap-4 border border-slate-200/80 relative shadow-xs ${
+                  !p.active ? 'opacity-60 bg-gray-50/50' : 'bg-white'
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-rose-gold p-0.5 shadow-rose flex items-center justify-center overflow-hidden font-heading text-2xl font-bold text-rose-dark bg-white">
+                    <div 
+                      className="w-16 h-16 rounded-full p-0.5 shadow-xs flex items-center justify-center overflow-hidden font-heading text-2xl font-bold bg-white"
+                      style={{ background: 'var(--theme-gradient)' }}
+                    >
                       {p.photo_url ? (
-                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover rounded-full" />
                       ) : (
-                        p.name.charAt(0)
+                        <div className="w-full h-full bg-white rounded-full flex items-center justify-center" style={{ color: 'var(--theme-primary)' }}>
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
                       )}
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 text-lg flex items-center gap-1.5">
                         {p.name}
                       </h3>
-                      <p className="text-xs text-rose-dark font-semibold">{p.role}</p>
+                      <p className="text-xs font-semibold" style={{ color: 'var(--theme-primary)' }}>{p.role}</p>
                     </div>
                   </div>
                   <span className={`badge ${p.active ? 'badge-green' : 'badge-red'}`}>
@@ -192,7 +197,14 @@ export default function AdminProfessionals() {
                   <div className="flex flex-wrap gap-1">
                     {specialties.length > 0 ? (
                       specialties.map((spec, i) => (
-                        <span key={i} className="text-[10px] bg-blush text-rose-dark px-2 py-0.5 rounded-full font-medium border border-rose-light/10">
+                        <span 
+                          key={i} 
+                          className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                          style={{
+                            backgroundColor: 'var(--theme-primary-light, #f1f5f9)',
+                            color: 'var(--theme-primary, #059669)',
+                          }}
+                        >
                           {spec}
                         </span>
                       ))
@@ -202,17 +214,17 @@ export default function AdminProfessionals() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 border-t border-rose-light/10 pt-4 mt-auto">
+                <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 mt-auto">
                   <button 
                     onClick={() => handleOpenModal(p)}
-                    className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1"
+                    className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer"
                   >
                     <FaEdit /> Editar
                   </button>
                   {p.active && (
                     <button 
                       onClick={() => handleDelete(p.id)}
-                      className="text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-full flex items-center gap-1"
+                      className="text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-full flex items-center gap-1 cursor-pointer"
                     >
                       <FaTrash /> Desativar
                     </button>
@@ -227,15 +239,15 @@ export default function AdminProfessionals() {
       {/* PROFESSIONAL MODAL */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-glass border border-rose-light/20 max-w-lg w-full p-6 animate-scale-up flex flex-col gap-4">
-            <div className="flex justify-between items-center border-b border-rose-light/20 pb-3">
-              <h3 className="text-lg font-bold text-mink font-heading">
+          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-glass border border-slate-200 max-w-lg w-full p-6 animate-scale-up flex flex-col gap-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-800 font-heading">
                 {editingPro ? 'Editar Profissional' : 'Novo Profissional'}
               </h3>
               <button 
                 type="button"
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+                className="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer"
               >
                 &times;
               </button>

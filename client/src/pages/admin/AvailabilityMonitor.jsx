@@ -53,24 +53,24 @@ export default function AvailabilityMonitor() {
         
         {/* Date Filter */}
         <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
-          <FaCalendarAlt className="text-rose-dark text-sm ml-1" />
+          <FaCalendarAlt style={{ color: 'var(--theme-primary)' }} className="text-sm ml-1" />
           <input 
             type="date" 
             value={currentDate}
             onChange={handleDateChange}
-            className="input !py-1 !px-2 border-none bg-transparent shadow-none focus:ring-0 text-sm font-semibold text-gray-700 w-36"
+            className="input !py-1 !px-2 border-none bg-transparent shadow-none focus:ring-0 text-sm font-semibold text-gray-700 w-36 cursor-pointer"
           />
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center py-20">
-          <FaSpinner className="animate-spin text-4xl text-primary" />
+          <FaSpinner className="animate-spin text-4xl" style={{ color: 'var(--theme-primary)' }} />
         </div>
       ) : (
         <div className="flex flex-col gap-6">
           {data?.closed ? (
-            <div className="card-glass p-8 text-center border-l-4 border-l-rose-dark">
+            <div className="card-glass p-8 text-center border-l-4" style={{ borderLeftColor: 'var(--theme-primary)' }}>
               <h3 className="text-lg font-bold text-gray-800">O Salão está fechado nesta data.</h3>
             </div>
           ) : data?.professionals?.length === 0 ? (
@@ -80,11 +80,17 @@ export default function AvailabilityMonitor() {
           ) : (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {data?.professionals.map((pro) => (
-                <div key={pro.professional.id} className="card-glass p-5 border border-white/50 shadow-glass flex flex-col">
+                <div key={pro.professional.id} className="card-glass p-5 border border-slate-200/80 shadow-xs flex flex-col bg-white">
                   
                   <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-light to-blush flex items-center justify-center text-rose-dark shadow-sm">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center shadow-xs"
+                        style={{
+                          backgroundColor: 'var(--theme-primary-light, #f1f5f9)',
+                          color: 'var(--theme-primary, #059669)',
+                        }}
+                      >
                         <FaUserTie className="text-lg" />
                       </div>
                       <div>

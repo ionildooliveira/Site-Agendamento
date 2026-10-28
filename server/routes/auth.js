@@ -125,7 +125,8 @@ const recoverPasswordHandler = async (req, res) => {
   const { data: admin, error } = await query.single();
 
   if (error || !admin) {
-    return res.status(404).json({ error: 'E-mail não encontrado em nossa base de dados.' });
+    // Retorna mensagem neutra para evitar enumeração de usuários (OWASP/LGPD)
+    return res.json({ message: 'Se o e-mail existir em nossa base, um link de recuperação será enviado.' });
   }
 
   const token = jwt.sign(

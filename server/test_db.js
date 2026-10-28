@@ -1,9 +1,7 @@
-const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+const { getDB } = require('./database/db');
 
-const SUPABASE_URL = 'https://zxewxdtpazjutwfxpams.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4ZXd4ZHRwYXpqdXR3ZnhwYW1zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDgyNTc4MCwiZXhwIjoyMTAwNDAxNzgwfQ.eXQ3o1S02_9Y7RWtGGU8iKq2C2A-DQ_PQjJAanvDy2g';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = getDB();
 
 async function testDashboard() {
   const today = new Date().toISOString().split('T')[0];

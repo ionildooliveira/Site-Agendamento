@@ -33,6 +33,11 @@ router.post('/', authenticateAdmin, setTenantId, upload.single('image'), async (
       return res.status(400).json({ error: 'Nenhuma imagem enviada' });
     }
 
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedMimes.includes(req.file.mimetype)) {
+      return res.status(400).json({ error: 'Formato de arquivo inválido. Permitido apenas JPG, PNG ou WEBP.' });
+    }
+
     const { title, description } = req.body;
     const supabase = getDB();
     

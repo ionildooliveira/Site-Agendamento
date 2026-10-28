@@ -10,9 +10,10 @@ Esta skill descreve as interfaces públicas dedicadas aos clientes finais do sal
 ## 1. Landing Page Dinâmica (`LandingPage.jsx`)
 
 A porta de entrada do tenant exibe a identidade personalizada da empresa:
-- **Hero Section:** Imagem de fundo customizada configurada pelo lojista, slogan e botões de chamada para ação ("Agendar Horário" e "Ver Serviços").
+- **Estilização Dinâmica por Nicho:** As cores primárias, secundárias, gradientes e badges adaptam-se automaticamente ao segmento da empresa (`barbearia`, `salao`, `esmalteria`, `estetica`), consumindo os tokens definidos na Skill 17.
+- **Hero Section:** Imagem de fundo customizada configurada pelo lojista, slogan, badge de nicho e botões de chamada para ação ("Agendar Horário" e "Ver Serviços").
 - **Média de Avaliações:** Exibição da nota calculada com base nos depoimentos aprovados.
-- **Carrossel de Serviços em Destaque:** Exibição de cards interativos com preço e tempo estimado.
+- **Carrossel de Serviços em Destaque:** Exibição de cards interativos com preço e tempo estimado com cores harmonizadas com o segmento.
 - **Portfólio & Galeria:** Grid de fotos de alta resolução salvas no Supabase Storage.
 - **Localização com Google Maps Embutido:** Mapa gerado dinamicamente a partir do endereço cadastrado.
 - **Botão Flutuante de WhatsApp:** Inicia conversa direta no WhatsApp da empresa com mensagem contextualizada pré-preenchida.

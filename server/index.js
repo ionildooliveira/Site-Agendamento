@@ -17,11 +17,35 @@ const companiesRoutes = require('./routes/companies');
 const testimonialsRoutes = require('./routes/testimonials');
 const galleryRoutes = require('./routes/gallery');
 const paymentsRoutes = require('./routes/payments');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { authenticateAdmin } = require('./middleware/auth');
 const { getDB } = require('./database/db');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// ─── Security & Hardening ───────────────────────────────────────────────────
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Rate Limiters
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20, // máximo 20 tentativas por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas tentativas a partir deste endereço IP. Tente novamente em 15 minutos.' }
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minuto
+  max: 300, // máximo 300 requisições por minuto por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Limite de requisições excedido. Tente novamente em instantes.' }
+});
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
@@ -35,8 +59,11 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ─── Database ─────────────────────────────────────────────────────────────────
-// Supabase é inicializado sob demanda, sem necessidade de esquema/seeding síncrono aqui.
+// ─── Rate limiting application ────────────────────────────────────────────────
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/admin/login', authLimiter);
+app.use('/api/auth/admin/recover-password', authLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -99,10 +126,9 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Rota não encontrada' });
 });
 
-// ─── Error handler ────────────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Erro interno do servidor' });
+  res.status(500).json({ error: 'Erro interno do servidor', details: err.message });
 });
 
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {

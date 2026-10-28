@@ -213,17 +213,26 @@ router.get('/client', setTenantId, async (req, res) => {
     .order('booking_date', { ascending: false })
     .order('start_time', { ascending: false });
 
-  const formattedBookings = (bookings || []).map(b => ({
-    ...b,
-    client_name: b.clients?.name,
-    client_phone: b.clients?.phone,
-    client_email: b.clients?.email,
-    professional_name: b.professionals?.name,
-    professional_role: b.professionals?.role,
-    service_name: b.services?.name,
-    service_price: b.services?.price,
-    duration_minutes: b.services?.duration_minutes
-  }));
+  const formattedBookings = (bookings || []).map(b => {
+    const rawPhone = b.clients?.phone || '';
+    const maskedPhone = rawPhone.length > 5 ? rawPhone.slice(0, 5) + '****' + rawPhone.slice(-2) : '****';
+    const rawEmail = b.clients?.email || '';
+    const [u, d] = rawEmail.split('@');
+    const maskedEmail = u && d ? `${u.slice(0, 2)}***@${d}` : '***';
+
+    return {
+      ...b,
+      clients: undefined,
+      client_name: b.clients?.name,
+      client_phone: maskedPhone,
+      client_email: maskedEmail,
+      professional_name: b.professionals?.name,
+      professional_role: b.professionals?.role,
+      service_name: b.services?.name,
+      service_price: b.services?.price,
+      duration_minutes: b.services?.duration_minutes
+    };
+  });
 
   res.json(formattedBookings);
 });
@@ -320,9 +329,25 @@ router.patch('/:id', setTenantId, updateBookingHandler);
 
 // ── DELETE /api/bookings/:id  (admin) — Hard Delete ─────────────────────────
 router.delete('/:id', authenticateAdmin, setTenantId, async (req, res) => {
-  const supabase = getDB();
-  await supabase.from('bookings').delete().eq('id', req.params.id).eq('company_id', req.tenantId);
-  res.json({ success: true });
+  try {
+    const supabase = getDB();
+    const bookingId = req.params.id;
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', bookingId)
+      .eq('company_id', req.tenantId);
+
+    if (error) {
+      console.error('Error deleting booking:', error);
+      return res.status(500).json({ error: 'Erro ao excluir agendamento no banco de dados.' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Exception in DELETE /bookings/:id:', err);
+    res.status(500).json({ error: 'Erro interno ao processar exclusão.' });
+  }
 });
 
 module.exports = router;

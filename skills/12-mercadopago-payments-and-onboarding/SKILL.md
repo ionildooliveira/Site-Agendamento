@@ -24,11 +24,11 @@ O onboarding automatizado substitui o provisionamento manual feito pelo Super Ad
                            │ Validação no Frontend
                            ▼
   ┌────────────────────────────────────────────────────────┐
-  │ Etapa 2: Dados do Salão (Tenant)                       │
-  │ • Nome do Salão e Slogan                               │
-  │ • Link Exclusivo (Slug) com verificação em tempo real   │
-  │ • CEP com auto-busca via ViaCEP                        │
-  │ • Endereço Completo e WhatsApp Comercial               │
+  │ Etapa 2: Dados do Segmento e da Empresa (Tenant)       │
+  │ • Seleção de Nicho: Barbearia, Salão, Esmalteria, Spa  │
+  │ • Sincronização dinâmica de Slogan e Layout            │
+  │ • Nome da Empresa e Link Exclusivo (Slug) verificado   │
+  │ • CEP com auto-busca via ViaCEP e WhatsApp Comercial   │
   └────────────────────────┬───────────────────────────────┘
                            │ Validação de Slug Único
                            ▼
