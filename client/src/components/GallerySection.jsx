@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaExpandAlt } from 'react-icons/fa';
 import { galleryAPI } from '../services/api';
+import { getSalonSettings } from '../services/salonSettings';
+import { getNicheData, DEFAULT_NICHE } from '../constants/niches';
 
 const getApiBaseUrl = () => {
   const url = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -15,6 +17,14 @@ export default function GallerySection() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const salon = getSalonSettings();
+  const nicheKey = salon?.niche || 
+    (/barbearia|barber/i.test(salon?.name || '') ? 'barbearia' : 
+     /estetica|spa/i.test(salon?.name || '') ? 'estetica' : 
+     /esmalte|unha/i.test(salon?.name || '') ? 'esmalteria' : DEFAULT_NICHE);
+  const nicheConfig = getNicheData(nicheKey);
+  const theme = nicheConfig.theme;
 
   useEffect(() => {
     async function fetchGallery() {
@@ -32,11 +42,11 @@ export default function GallerySection() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-white">
+      <section className={`py-20 ${theme.isDark ? 'bg-[#18181B]' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(n => (
-              <div key={n} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+              <div key={n} className={`h-64 rounded-2xl animate-pulse ${theme.isDark ? 'bg-zinc-800' : 'bg-gray-100'}`} />
             ))}
           </div>
         </div>
@@ -47,14 +57,16 @@ export default function GallerySection() {
   if (images.length === 0) return null;
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-[#FFF8FA] overflow-hidden">
+    <section className={`py-24 overflow-hidden border-t ${
+      theme.isDark ? 'bg-[#18181B] border-zinc-800' : 'bg-gradient-to-b from-white to-gray-50/50 border-gray-100'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.span 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-xs font-semibold uppercase tracking-widest text-[#D47FA6] bg-[#FDF2F7] px-4 py-1.5 rounded-full inline-block mb-4"
+            className={`text-xs font-semibold uppercase tracking-widest ${theme.badgeClass} px-4 py-1.5 rounded-full inline-block mb-4`}
           >
             Nosso Portfólio
           </motion.span>
@@ -63,7 +75,7 @@ export default function GallerySection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-5xl font-extrabold text-[#4A323D] mb-4"
+            className={`text-3xl md:text-5xl font-extrabold ${theme.headingColor} mb-4`}
           >
             Galeria de Trabalhos
           </motion.h2>
@@ -72,9 +84,9 @@ export default function GallerySection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto"
+            className="text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto"
           >
-            Conheça a excelência dos nossos serviços e inspire-se com as transformações realizadas por nossas especialistas.
+            Conheça a excelência dos nossos serviços e inspire-se com as transformações realizadas por nossos profissionais.
           </motion.p>
         </div>
 
@@ -86,17 +98,17 @@ export default function GallerySection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer aspect-[4/5]"
+              className={`relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer aspect-[4/5] border ${theme.cardBorder}`}
               onClick={() => setSelectedImage(img)}
             >
               <img
                 src={img.image_url.startsWith('http') ? img.image_url : `${BASE_URL}${img.image_url}`}
-                alt={img.title || 'Galeria Studio Beauty'}
+                alt={img.title || 'Galeria de Fotos'}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               
               {/* Overlay on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#4A323D]/90 via-[#4A323D]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                 <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                   <FaExpandAlt className="text-white/80 text-xl mb-3" />
                   {img.title && (

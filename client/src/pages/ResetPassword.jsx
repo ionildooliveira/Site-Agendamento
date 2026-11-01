@@ -72,23 +72,20 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream to-blush flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
       
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-rose/15 blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full bg-gold/10 blur-[120px]"></div>
-
       <div className="w-full max-w-md relative z-10 animate-fade-in">
         
-        <Link to={`/${companySlug || ''}/admin`} className="inline-flex items-center gap-2 text-mink/70 hover:text-rose-dark text-xs font-bold uppercase tracking-wider mb-8 transition-colors">
+        <Link to={`/${companySlug || ''}/admin`} className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 text-xs font-bold uppercase tracking-wider mb-8 transition-colors">
           <FaChevronLeft className="text-xs" /> Voltar para o Login
         </Link>
 
-        <div className="card-glass p-8 md:p-10 shadow-glass border border-white/50 bg-white/75 relative">
+        <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-gray-200 relative">
           
           <div className="text-center mb-8 animate-fade-in">
             <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">Nova Senha</h1>
             <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
-              Crie uma nova senha para acessar o painel do {salon.name || 'Studio Beauty'}.
+              Crie uma nova senha para acessar o painel do {salon.name || 'Agendamento'}.
             </p>
           </div>
 
@@ -105,7 +102,7 @@ export default function ResetPassword() {
                   className="input pl-11 text-xs"
                   disabled={loading}
                 />
-                <FaLock className="absolute left-4 top-4 text-rose-dark text-xs" />
+                <FaLock className="absolute left-4 top-4 text-slate-400 text-xs" />
               </div>
             </div>
 
@@ -121,7 +118,7 @@ export default function ResetPassword() {
                   className="input pl-11 text-xs"
                   disabled={loading}
                 />
-                <FaLock className="absolute left-4 top-4 text-rose-dark text-xs" />
+                <FaLock className="absolute left-4 top-4 text-slate-400 text-xs" />
               </div>
             </div>
 

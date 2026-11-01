@@ -59,26 +59,41 @@ export default function AdminTestimonials() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#4A323D]">Depoimentos</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Depoimentos</h2>
           <p className="text-gray-600 mt-1">Gerencie as avaliações deixadas pelos clientes</p>
         </div>
 
         <div className="flex bg-white rounded-lg p-1 border border-gray-200">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${filter === 'all' ? 'bg-[#FDF2F7] text-[#D47FA6]' : 'text-gray-600 hover:bg-gray-50'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              filter === 'all' 
+                ? 'text-white font-semibold shadow-xs' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+            style={filter === 'all' ? { background: 'var(--theme-gradient)' } : {}}
           >
             Todos
           </button>
           <button
             onClick={() => setFilter('pending')}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${filter === 'pending' ? 'bg-[#FDF2F7] text-[#D47FA6]' : 'text-gray-600 hover:bg-gray-50'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              filter === 'pending' 
+                ? 'text-white font-semibold shadow-xs' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+            style={filter === 'pending' ? { background: 'var(--theme-gradient)' } : {}}
           >
             Pendentes
           </button>
           <button
             onClick={() => setFilter('approved')}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${filter === 'approved' ? 'bg-[#FDF2F7] text-[#D47FA6]' : 'text-gray-600 hover:bg-gray-50'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              filter === 'approved' 
+                ? 'text-white font-semibold shadow-xs' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+            style={filter === 'approved' ? { background: 'var(--theme-gradient)' } : {}}
           >
             Aprovados
           </button>
@@ -99,12 +114,12 @@ export default function AdminTestimonials() {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
                     <img
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.client?.name || 'Cliente')}&background=F5D8E3&color=D47FA6`}
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.client?.name || 'Cliente')}&background=f1f5f9&color=475569`}
                       alt={t.client?.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <h4 className="font-bold text-[#4A323D] text-sm">{t.client?.name || 'Cliente Oculto'}</h4>
+                      <h4 className="font-bold text-slate-800 text-sm">{t.client?.name || 'Cliente Oculto'}</h4>
                       <p className="text-xs text-gray-500">
                         {new Date(t.created_at).toLocaleDateString('pt-BR')}
                         {t.service_name && ` • ${t.service_name}`}
@@ -120,7 +135,7 @@ export default function AdminTestimonials() {
                   ))}
                 </div>
                 
-                <p className="text-gray-600 text-sm italic border-l-2 border-[#F5D8E3] pl-3 py-1">
+                <p className="text-gray-600 text-sm italic border-l-2 border-slate-200 pl-3 py-1">
                   "{t.comment}"
                 </p>
               </div>

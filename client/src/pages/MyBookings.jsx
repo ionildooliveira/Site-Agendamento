@@ -9,6 +9,8 @@ import {
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
+import { getSalonSettings } from '../services/salonSettings';
+import { getNicheData, DEFAULT_NICHE } from '../constants/niches';
 
 export default function MyBookings() {
   const { companySlug } = useParams();
@@ -16,6 +18,14 @@ export default function MyBookings() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
+
+  const salon = getSalonSettings();
+  const nicheKey = salon?.niche || 
+    (/barbearia|barber/i.test(salon?.name || '') ? 'barbearia' : 
+     /estetica|spa/i.test(salon?.name || '') ? 'estetica' : 
+     /esmalte|unha/i.test(salon?.name || '') ? 'esmalteria' : DEFAULT_NICHE);
+  const nicheConfig = getNicheData(nicheKey);
+  const theme = nicheConfig.theme;
 
   // Rescheduling states
   const [rescheduleBooking, setRescheduleBooking] = useState(null);
@@ -175,29 +185,32 @@ export default function MyBookings() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#FFF8FA] font-sans text-[#4A323D]">
+    <div className={`min-h-screen flex flex-col justify-between ${theme.isDark ? 'bg-[#121214] text-zinc-200' : 'bg-slate-50 text-slate-800'} font-sans`}>
       <PublicNavbar />
 
       {/* Content */}
       <main className="flex-grow max-w-4xl w-full mx-auto px-6 py-32">
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="section-title">Meus Agendamentos</h1>
+          <h1 className={`section-title ${theme.headingColor}`}>Meus Agendamentos</h1>
           <p className="section-subtitle">Consulte o status, reagende ou cancele seus compromissos informando seu e-mail cadastrado.</p>
-          <div className="h-[2px] w-16 bg-gradient-rose-gold mx-auto mt-4"></div>
+          <div className="h-[2px] w-16 mx-auto mt-4" style={{ background: 'var(--theme-gradient)' }}></div>
         </div>
 
         {/* LOADING OVERLAY */}
         {loading && (
-          <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-10 h-10 border-4 border-rose border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-xs text-mink font-bold uppercase tracking-wider">Carregando...</p>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3 bg-white p-6 rounded-2xl shadow-xl">
+              <div 
+                className="w-10 h-10 border-4 rounded-full animate-spin"
+                style={{ borderColor: 'var(--theme-primary)', borderTopColor: 'transparent' }}
+              ></div>
+              <p className="text-xs text-slate-700 font-bold uppercase tracking-wider">Carregando...</p>
             </div>
           </div>
         )}
 
         {/* Search Bar */}
-        <div className="card p-8 max-w-lg mx-auto mb-12 animate-fade-in bg-white/80 backdrop-blur-md">
+        <div className={`card p-8 max-w-lg mx-auto mb-12 animate-fade-in ${theme.isDark ? 'bg-[#18181B] border-zinc-800' : 'bg-white/90'} backdrop-blur-md`}>
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-grow w-full">
               <label className="label">E-mail Cadastrado</label>
@@ -210,7 +223,7 @@ export default function MyBookings() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="input !pl-11 text-xs"
                 />
-                <FaEnvelope className="absolute left-4 top-4 text-rose-dark text-xs" />
+                <FaEnvelope className="absolute left-4 top-4 text-slate-400 text-xs" />
               </div>
             </div>
             <button type="submit" className="btn-primary w-full sm:w-auto h-fit text-xs py-3 px-6">
@@ -223,9 +236,9 @@ export default function MyBookings() {
         {searched && (
           <div className="animate-slide-up">
             {bookings.length === 0 ? (
-              <div className="text-center py-16 card p-8 max-w-lg mx-auto bg-white/80 backdrop-blur-md">
-                <FaCalendarTimes className="text-5xl text-rose-dark/30 mx-auto mb-4 animate-float" />
-                <h3 className="text-lg font-bold text-mink mb-1">Nenhum agendamento ativo</h3>
+              <div className={`text-center py-16 card p-8 max-w-lg mx-auto ${theme.isDark ? 'bg-[#18181B] border-zinc-800' : 'bg-white/90'} backdrop-blur-md`}>
+                <FaCalendarTimes className="text-5xl text-gray-400 mx-auto mb-4 animate-float" />
+                <h3 className="text-lg font-bold text-slate-800 mb-1">Nenhum agendamento ativo</h3>
                 <p className="text-xs text-gray-500 leading-relaxed">Não encontramos agendamentos para o e-mail <strong>{email}</strong>.</p>
                 <Link to={`/${companySlug}`} className="btn-primary mt-6 inline-flex text-xs py-2.5 px-6">
                   Agendar um Horário
@@ -233,8 +246,8 @@ export default function MyBookings() {
               </div>
             ) : (
               <div className="flex flex-col gap-5">
-                <h2 className="text-base font-bold text-mink flex items-center gap-2.5 mb-2 uppercase tracking-wider text-[11px]">
-                  <FaHistory className="text-rose-dark" /> Histórico de Agendamentos
+                <h2 className="text-base font-bold flex items-center gap-2.5 mb-2 uppercase tracking-wider text-[11px]" style={{ color: 'var(--theme-primary)' }}>
+                  <FaHistory /> Histórico de Agendamentos
                 </h2>
                 
                 {bookings.map((booking) => {
@@ -245,34 +258,37 @@ export default function MyBookings() {
                   return (
                     <div 
                       key={booking.id} 
-                      className={`card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white/80 backdrop-blur-md ${
-                        isCancelled ? 'opacity-60 border-l-4 border-gray-300' : 'border-l-4 border-gold'
+                      className={`card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${
+                        theme.isDark ? 'bg-[#18181B] border-zinc-800' : 'bg-white/90'
+                      } backdrop-blur-md ${
+                        isCancelled ? 'opacity-60 border-l-4 border-gray-300' : 'border-l-4'
                       }`}
+                      style={!isCancelled ? { borderLeftColor: 'var(--theme-primary)' } : {}}
                     >
                       <div className="flex-grow">
                         <div className="flex items-center gap-2.5 mb-2.5">
-                          <span className={`badge ${
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                             isCancelled 
-                              ? 'badge-gray' 
+                              ? 'bg-gray-100 text-gray-600' 
                               : isPast 
-                              ? 'badge-rose' 
-                              : 'badge-gold'
+                              ? 'bg-slate-100 text-slate-700' 
+                              : 'bg-emerald-50 text-emerald-700'
                           }`}>
                             {isCancelled ? 'Cancelado' : isPast ? 'Realizado' : 'Confirmado'}
                           </span>
-                          <span className="font-mono text-[10px] text-gray-400 font-semibold bg-gray-55 px-2 py-0.5 rounded border border-gray-100/10">ID: #{booking.id}</span>
+                          <span className="font-mono text-[10px] text-gray-400 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200">ID: #{booking.id}</span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900">{booking.service_name}</h3>
-                        <p className="text-xs text-rose-dark font-semibold mb-3">Profissional: {booking.professional_name}</p>
+                        <h3 className={`text-lg font-bold ${theme.isDark ? 'text-white' : 'text-gray-900'}`}>{booking.service_name}</h3>
+                        <p className="text-xs text-gray-500 font-semibold mb-3">Profissional: {booking.professional_name}</p>
                         
                         <div className="flex flex-wrap gap-5 text-xs text-gray-600 font-medium">
                           <span className="flex items-center gap-1.5">
-                            <FaCalendarAlt className="text-rose-dark" /> {booking.booking_date.split('-').reverse().join('/')}
+                            <FaCalendarAlt style={{ color: 'var(--theme-primary)' }} /> {booking.booking_date.split('-').reverse().join('/')}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <FaClock className="text-rose-dark" /> {booking.start_time} às {booking.end_time}
+                            <FaClock style={{ color: 'var(--theme-primary)' }} /> {booking.start_time} às {booking.end_time}
                           </span>
-                          <span className="font-extrabold text-gray-800">
+                          <span className={`font-extrabold ${theme.accentPrice}`}>
                             R$ {booking.service_price.toFixed(2)}
                           </span>
                         </div>
@@ -325,8 +341,8 @@ export default function MyBookings() {
         {/* RESCHEDULE MODAL */}
         {rescheduleBooking && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-glass border border-rose-light/20 max-w-xl w-full p-8 animate-fade-in">
-              <div className="flex justify-between items-center border-b border-rose-light/20 pb-4 mb-5">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-200 max-w-xl w-full p-8 animate-fade-in">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-5">
                 <h3 className="text-lg font-heading font-bold text-gray-900">Reagendar Atendimento</h3>
                 <button 
                   onClick={() => setRescheduleBooking(null)}
@@ -336,8 +352,8 @@ export default function MyBookings() {
                 </button>
               </div>
 
-              <div className="mb-6 bg-blush/35 p-5 rounded-2xl text-xs text-mink border border-rose-light/20 shadow-sm relative overflow-hidden">
-                <p className="font-bold text-[10px] text-rose-dark uppercase tracking-wider mb-2">Detalhes Atuais</p>
+              <div className="mb-6 bg-slate-50 p-5 rounded-2xl text-xs text-slate-700 border border-slate-200 shadow-sm relative overflow-hidden">
+                <p className="font-bold text-[10px] text-gray-500 uppercase tracking-wider mb-2">Detalhes Atuais</p>
                 <p className="font-medium">Serviço: <span className="text-gray-900 font-semibold">{rescheduleBooking.service_name}</span></p>
                 <p className="font-medium mt-0.5">Profissional: <span className="text-gray-900 font-semibold">{rescheduleBooking.professional_name}</span></p>
                 <p className="font-medium mt-0.5">Horário Atual: <span className="text-gray-900 font-semibold">{rescheduleBooking.booking_date.split('-').reverse().join('/')} às {rescheduleBooking.start_time}</span></p>
@@ -399,8 +415,8 @@ export default function MyBookings() {
         {/* REVIEW MODAL */}
         {reviewBooking && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-glass border border-rose-light/20 max-w-xl w-full p-8 animate-fade-in">
-              <div className="flex justify-between items-center border-b border-rose-light/20 pb-4 mb-5">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-200 max-w-xl w-full p-8 animate-fade-in">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-5">
                 <h3 className="text-lg font-heading font-bold text-gray-900">Avaliar Atendimento</h3>
                 <button 
                   onClick={() => setReviewBooking(null)}
@@ -410,8 +426,8 @@ export default function MyBookings() {
                 </button>
               </div>
 
-              <div className="mb-6 bg-blush/35 p-5 rounded-2xl text-xs text-mink border border-rose-light/20 shadow-sm relative overflow-hidden">
-                <p className="font-bold text-[10px] text-rose-dark uppercase tracking-wider mb-2">Detalhes do Serviço</p>
+              <div className="mb-6 bg-slate-50 p-5 rounded-2xl text-xs text-slate-700 border border-slate-200 shadow-sm relative overflow-hidden">
+                <p className="font-bold text-[10px] text-gray-500 uppercase tracking-wider mb-2">Detalhes do Serviço</p>
                 <p className="font-medium">Serviço: <span className="text-gray-900 font-semibold">{reviewBooking.service_name}</span></p>
                 <p className="font-medium mt-0.5">Profissional: <span className="text-gray-900 font-semibold">{reviewBooking.professional_name}</span></p>
               </div>

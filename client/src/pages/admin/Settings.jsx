@@ -332,12 +332,12 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="space-y-6 font-sans text-[#4A323D]">
+    <div className="space-y-6 font-sans text-slate-800">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[#4A323D]">Configurações do Sistema</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Configurações do Sistema</h1>
         <p className="text-xs text-gray-500">
-          Gerencie a identidade do salão, número de WhatsApp, grade de horários e datas bloqueadas.
+          Gerencie a identidade do estabelecimento, número de WhatsApp, grade de horários e datas bloqueadas.
         </p>
       </div>
 
@@ -411,7 +411,7 @@ export default function AdminSettings() {
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <FaClock className="animate-spin text-4xl text-[#D47FA6]" />
+          <FaClock className="animate-spin text-4xl" style={{ color: 'var(--theme-primary)' }} />
         </div>
       ) : (
         <>
@@ -419,7 +419,7 @@ export default function AdminSettings() {
           {activeTab === 'salon' && (
         <form onSubmit={handleSaveSalonIdentity} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5 max-w-3xl">
           <div className="border-b border-gray-100 pb-3">
-            <h2 className="text-base font-bold text-[#4A323D]">Identidade e WhatsApp de Atendimento</h2>
+            <h2 className="text-base font-bold text-slate-900">Identidade e WhatsApp de Atendimento</h2>
             <p className="text-xs text-gray-500">
               Estas informações são refletidas no rodapé, cabeçalho e botão de WhatsApp do site público.
             </p>
@@ -427,20 +427,20 @@ export default function AdminSettings() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Nome do Estabelecimento</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Nome do Estabelecimento</label>
               <input
                 type="text"
                 required
                 disabled
                 value={salonData.name}
                 onChange={(e) => setSalonData({ ...salonData, name: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-[#4A323D]">Segmento / Nicho</label>
+                <label className="block text-xs font-bold text-slate-700">Segmento / Nicho</label>
                 <span className="text-[10px] text-gray-500 font-medium bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
                   Fixo no plano
                 </span>
@@ -468,20 +468,20 @@ export default function AdminSettings() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Slogan / Subtítulo</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Slogan / Subtítulo</label>
               <input
                 type="text"
                 required
                 value={salonData.slogan}
                 onChange={(e) => setSalonData({ ...salonData, slogan: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1 flex items-center gap-1.5">
+              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
                 <FaWhatsapp className="text-[#25D366]" /> Número de WhatsApp (c/ DDD)
               </label>
               <input
@@ -490,63 +490,63 @@ export default function AdminSettings() {
                 placeholder="5511999998888"
                 value={salonData.whatsapp}
                 onChange={(e) => setSalonData({ ...salonData, whatsapp: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
               <span className="text-[11px] text-gray-400">Ex: 5511999998888 (com 55 + DDD + número)</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">E-mail de Contato</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">E-mail de Contato</label>
               <input
                 type="email"
                 required
                 disabled
                 value={salonData.email}
                 onChange={(e) => setSalonData({ ...salonData, email: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">CEP</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">CEP</label>
               <input
                 type="text"
                 placeholder="Ex: 01310-200"
                 value={salonData.cep || ''}
                 onChange={(e) => setSalonData({ ...salonData, cep: e.target.value })}
                 onBlur={handleCepBlur}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Cidade - Estado</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Cidade - Estado</label>
               <input
                 type="text"
                 required
                 value={salonData.cityState}
                 onChange={(e) => setSalonData({ ...salonData, cityState: e.target.value })}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#4A323D] mb-1">Endereço</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Endereço</label>
             <input
               type="text"
               required
               value={salonData.address}
               onChange={(e) => setSalonData({ ...salonData, address: e.target.value })}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#4A323D] mb-2 flex items-center gap-1.5">
-              <FaImage className="text-[#D47FA6]" /> Imagem de Capa (Visível em Celular, Tablet e PC)
+            <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+              <FaImage style={{ color: 'var(--theme-primary)' }} /> Imagem de Capa (Visível em Celular, Tablet e PC)
             </label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               {salonData.heroImage && (
@@ -568,9 +568,9 @@ export default function AdminSettings() {
                     accept="image/*"
                     onChange={handleCoverUpload}
                     disabled={uploadingCover}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#FDF2F7] file:text-[#D47FA6] hover:file:bg-[#F5D8E3] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  {uploadingCover && <p className="text-xs text-[#D47FA6] mt-1">Enviando...</p>}
+                  {uploadingCover && <p className="text-xs mt-1" style={{ color: 'var(--theme-primary)' }}>Enviando...</p>}
                 </div>
                 
                 <div>
@@ -582,7 +582,7 @@ export default function AdminSettings() {
                     required
                     value={salonData.heroImage || ''}
                     onChange={(e) => setSalonData({ ...salonData, heroImage: e.target.value })}
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
                     placeholder="https://..."
                   />
                 </div>
@@ -591,7 +591,7 @@ export default function AdminSettings() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#4A323D] mb-1">
+            <label className="block text-xs font-bold text-slate-700 mb-1">
               Resumo de Horários no Rodapé
             </label>
             <input
@@ -600,7 +600,7 @@ export default function AdminSettings() {
               disabled
               value={salonData.workingHoursText}
               onChange={(e) => setSalonData({ ...salonData, workingHoursText: e.target.value })}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -621,7 +621,7 @@ export default function AdminSettings() {
       {activeTab === 'hours' && (
         <form onSubmit={handleSaveWorkingHours} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
           <div className="border-b border-gray-100 pb-3">
-            <h2 className="text-base font-bold text-[#4A323D]">Grade Semanal de Funcionamento</h2>
+            <h2 className="text-base font-bold text-slate-900">Grade Semanal de Funcionamento</h2>
             <p className="text-xs text-gray-500">
               Defina os dias de atendimento e horário inicial/final para agendamentos na plataforma.
             </p>
@@ -639,14 +639,15 @@ export default function AdminSettings() {
                       type="button"
                       onClick={() => handleToggleDay(key)}
                       className={`w-10 h-6 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${
-                        isClosed ? 'bg-gray-300' : 'bg-[#D47FA6]'
+                        isClosed ? 'bg-gray-300' : ''
                       }`}
+                      style={!isClosed ? { backgroundColor: 'var(--theme-primary)' } : {}}
                     >
                       <div className={`w-5 h-5 rounded-full bg-white transition-transform duration-200 transform ${
                         isClosed ? 'translate-x-0' : 'translate-x-4'
                       }`} />
                     </button>
-                    <span className="font-semibold text-sm text-[#4A323D] w-32">{label}</span>
+                    <span className="font-semibold text-sm text-slate-800 w-32">{label}</span>
                   </div>
 
                   {!isClosed ? (
@@ -679,7 +680,7 @@ export default function AdminSettings() {
 
           <div className="border-t border-gray-100 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <label className="text-xs font-bold text-[#4A323D]">Intervalo entre horários (min):</label>
+              <label className="text-xs font-bold text-slate-700">Intervalo entre horários (min):</label>
               <select
                 value={slotInterval}
                 onChange={(e) => setSlotInterval(e.target.value)}
@@ -710,34 +711,34 @@ export default function AdminSettings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
           {/* Add form */}
           <form onSubmit={handleAddBlockedDate} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4 h-fit">
-            <h3 className="text-base font-bold text-[#4A323D] border-b border-gray-100 pb-3 flex items-center gap-2">
-              <FaPlusCircle className="text-[#D47FA6]" /> Bloquear Nova Data
+            <h3 className="text-base font-bold text-slate-900 border-b border-gray-100 pb-3 flex items-center gap-2">
+              <FaPlusCircle style={{ color: 'var(--theme-primary)' }} /> Bloquear Nova Data
             </h3>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Data *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Data *</label>
               <input
                 type="date"
                 required
                 value={blockDate}
                 onChange={(e) => setBlockDate(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Motivo (Feriado, Evento, etc.)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Motivo (Feriado, Evento, etc.)</label>
               <input
                 type="text"
                 placeholder="Ex: Feriado Nacional / Manutenção"
                 value={blockReason}
                 onChange={(e) => setBlockReason(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Profissional Específico (Opcional)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Profissional Específico (Opcional)</label>
               <select
                 value={blockProId}
                 onChange={(e) => setBlockProId(e.target.value)}
@@ -761,9 +762,9 @@ export default function AdminSettings() {
 
           {/* List blocked dates */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h3 className="text-base font-bold text-[#4A323D] border-b border-gray-100 pb-3 flex items-center justify-between">
+            <h3 className="text-base font-bold text-slate-900 border-b border-gray-100 pb-3 flex items-center justify-between">
               <span>Datas Bloqueadas Cadastradas</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-[#4A323D]">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-slate-700">
                 {blockedDates.length}
               </span>
             </h3>
@@ -775,12 +776,12 @@ export default function AdminSettings() {
                 {blockedDates.map((block) => (
                   <div key={block.id} className="p-3.5 rounded-xl border border-gray-200 flex items-center justify-between text-xs">
                     <div>
-                      <span className="font-bold text-sm text-[#4A323D] block">
+                      <span className="font-bold text-sm text-slate-900 block">
                         {block.blocked_date.split('-').reverse().join('/')}
                       </span>
                       <span className="text-gray-500">{block.reason || 'Bloqueio administrativo'}</span>
-                      <span className="block text-[11px] text-[#D47FA6] font-medium mt-0.5">
-                        {block.professional_name ? `Especialista: ${block.professional_name}` : 'Salão Inteiro'}
+                      <span className="block text-[11px] font-medium mt-0.5" style={{ color: 'var(--theme-primary)' }}>
+                        {block.professional_name ? `Especialista: ${block.professional_name}` : 'Estabelecimento Inteiro'}
                       </span>
                     </div>
 
@@ -804,7 +805,7 @@ export default function AdminSettings() {
       {activeTab === 'security' && (
         <form onSubmit={handleUpdateCredentials} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 max-w-2xl">
           <div className="border-b border-gray-100 pb-3">
-            <h2 className="text-base font-bold text-[#4A323D]">Configurações de Acesso</h2>
+            <h2 className="text-base font-bold text-slate-900">Configurações de Acesso</h2>
             <p className="text-xs text-gray-500">
               Altere o seu e-mail de acesso ou senha do painel administrativo.
             </p>
@@ -812,47 +813,47 @@ export default function AdminSettings() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Senha Atual *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Senha Atual *</label>
               <input
                 type="password"
                 required
                 placeholder="Obrigatório para realizar alterações"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div className="pt-4 border-t border-gray-100">
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Novo E-mail</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Novo E-mail</label>
               <input
                 type="email"
                 placeholder="Deixe em branco para não alterar"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Nova Senha</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Nova Senha</label>
               <input
                 type="password"
                 placeholder="Deixe em branco para não alterar"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Confirmar Nova Senha</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Confirmar Nova Senha</label>
               <input
                 type="password"
                 placeholder="Repita a nova senha"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
           </div>
@@ -876,7 +877,7 @@ export default function AdminSettings() {
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
           <div className="border-b border-gray-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-base font-bold text-[#4A323D]">Minha Assinatura & Plano</h2>
+              <h2 className="text-base font-bold text-slate-900">Minha Assinatura & Plano</h2>
               <p className="text-xs text-gray-500">
                 Gerencie sua mensalidade recorrente e formas de pagamento integradas ao Mercado Pago.
               </p>
@@ -925,13 +926,13 @@ export default function AdminSettings() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Plano Atual</span>
-              <p className="text-lg font-bold text-[#4A323D] mt-1">{subscription?.plan || 'Plano Profissional'}</p>
+              <p className="text-lg font-bold text-slate-900 mt-1">{subscription?.plan || 'Plano Profissional'}</p>
               <span className="text-xs text-gray-500">Acesso ilimitado a todos os recursos</span>
             </div>
 
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Valor da Mensalidade</span>
-              <p className="text-lg font-bold text-[#6B4E5A] mt-1">
+              <p className="text-lg font-bold text-slate-900 mt-1">
                 R$ {Number(subscription?.amount || 69.90).toFixed(2).replace('.', ',')} / mês
               </p>
               <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
@@ -947,7 +948,7 @@ export default function AdminSettings() {
 
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Forma de Pagamento</span>
-              <p className="text-sm font-bold text-[#4A323D] mt-1 capitalize">
+              <p className="text-sm font-bold text-slate-900 mt-1 capitalize">
                 {subscription?.payment_method === 'pix'
                   ? 'PIX Instantâneo'
                   : subscription?.payment_method === 'debit_card'
@@ -961,7 +962,7 @@ export default function AdminSettings() {
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
                 {subscription?.status === 'cancelled' ? 'Acesso Garantido Até' : 'Próxima Renovação'}
               </span>
-              <p className="text-sm font-bold text-[#4A323D] mt-1">
+              <p className="text-sm font-bold text-slate-900 mt-1">
                 {subscription?.next_billing_date
                   ? new Date(subscription.next_billing_date).toLocaleDateString('pt-BR')
                   : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
@@ -972,9 +973,9 @@ export default function AdminSettings() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#FFF8FA] border border-[#F5D8E3] text-xs text-gray-600 leading-relaxed space-y-1">
-            <p className="font-bold text-[#4A323D] flex items-center gap-1.5">
-              <FaShieldAlt className="text-[#D47FA6]" /> Garantia de Continuidade & Transparência
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed space-y-1">
+            <p className="font-bold text-slate-800 flex items-center gap-1.5">
+              <FaShieldAlt style={{ color: 'var(--theme-primary)' }} /> Garantia de Continuidade & Transparência
             </p>
             <p>
               Você tem total liberdade e autonomia para gerenciar sua assinatura a qualquer momento, sem contratos de fidelidade ou taxas de cancelamento surpresa.
@@ -1009,7 +1010,7 @@ export default function AdminSettings() {
                   <FaExclamationTriangle />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-bold text-[#4A323D]">Cancelar Renovação Automática?</h3>
+                  <h3 className="text-lg font-bold text-slate-900">Cancelar Renovação Automática?</h3>
                   <p className="text-xs text-gray-500 mt-1 leading-relaxed">
                     Sentiremos sua falta! Veja como funcionará o seu cancelamento:
                   </p>
@@ -1022,7 +1023,7 @@ export default function AdminSettings() {
                   </p>
                   <p className="flex items-start gap-2">
                     <span className="text-emerald-600 font-bold">✓</span>
-                    <span>Seu salão continuará funcionando normalmente até o final do período já pago.</span>
+                    <span>Seu estabelecimento continuará funcionando normalmente até o final do período já pago.</span>
                   </p>
                   <p className="flex items-start gap-2">
                     <span className="text-emerald-600 font-bold">✓</span>
@@ -1039,7 +1040,7 @@ export default function AdminSettings() {
                     placeholder="Nos conte brevemente o que poderíamos ter feito melhor..."
                     value={cancellationReason}
                     onChange={(e) => setCancellationReason(e.target.value)}
-                    className="w-full p-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                    className="w-full p-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
                   />
                 </div>
 

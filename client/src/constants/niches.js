@@ -1,6 +1,7 @@
 export const NICHES = {
   barbearia: {
     id: 'barbearia',
+    name: 'Barbearia & Barber Shop',
     label: 'Barbearia',
     icon: '💈',
     saasBrand: 'I.O.S AgendeJá',
@@ -30,6 +31,7 @@ export const NICHES = {
       primaryColor: '#D97706',
       primaryDark: '#B45309',
       primaryLight: '#FEF3C7',
+      primaryGradient: 'from-amber-600 to-amber-500',
       pageBg: 'bg-[#121214]',
       pageText: 'text-zinc-200',
       headingColor: 'text-white',
@@ -66,6 +68,7 @@ export const NICHES = {
   },
   salao: {
     id: 'salao',
+    name: 'Salão de Beleza',
     label: 'Salão de Beleza',
     icon: '💇‍♀️',
     saasBrand: 'I.O.S AgendeJá',
@@ -95,6 +98,7 @@ export const NICHES = {
       primaryColor: '#D47FA6',
       primaryDark: '#B86289',
       primaryLight: '#FDF2F7',
+      primaryGradient: 'from-[#D47FA6] to-[#E8A5C8]',
       pageBg: 'bg-[#FFF8FA]',
       pageText: 'text-[#4A323D]',
       headingColor: 'text-[#4A323D]',
@@ -131,6 +135,7 @@ export const NICHES = {
   },
   esmalteria: {
     id: 'esmalteria',
+    name: 'Esmalteria & Nails Club',
     label: 'Esmalteria & Nails',
     icon: '💅',
     saasBrand: 'I.O.S AgendeJá',
@@ -160,6 +165,7 @@ export const NICHES = {
       primaryColor: '#8B5CF6',
       primaryDark: '#7C3AED',
       primaryLight: '#F5F3FF',
+      primaryGradient: 'from-purple-600 to-indigo-500',
       pageBg: 'bg-[#FAF8FF]',
       pageText: 'text-[#2D1B4E]',
       headingColor: 'text-[#2D1B4E]',
@@ -196,6 +202,7 @@ export const NICHES = {
   },
   estetica: {
     id: 'estetica',
+    name: 'Estética & Spa',
     label: 'Estética & Spa',
     icon: '🌿',
     saasBrand: 'I.O.S AgendeJá',
@@ -225,6 +232,7 @@ export const NICHES = {
       primaryColor: '#059669',
       primaryDark: '#047857',
       primaryLight: '#ECFDF5',
+      primaryGradient: 'from-emerald-600 to-teal-500',
       pageBg: 'bg-[#F2FDF8]',
       pageText: 'text-[#064E3B]',
       headingColor: 'text-[#064E3B]',
@@ -266,9 +274,10 @@ export const DEFAULT_NICHE = 'barbearia';
 export function getNicheData(nicheKey) {
   if (!nicheKey) return NICHES[DEFAULT_NICHE];
   const normalized = String(nicheKey).toLowerCase().trim();
-  return NICHES[normalized] || NICHES.salao || NICHES[DEFAULT_NICHE];
+  return NICHES[normalized] || NICHES[DEFAULT_NICHE] || NICHES.barbearia;
 }
 
 export const getNicheConfig = getNicheData;
+
 
 

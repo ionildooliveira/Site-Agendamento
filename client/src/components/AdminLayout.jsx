@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { getSalonSettings } from '../services/salonSettings';
-import { getNicheConfig } from '../constants/niches';
+import { getNicheConfig, DEFAULT_NICHE } from '../constants/niches';
 import { 
   FaChartPie, FaCalendarAlt, FaCut, FaUsers, 
   FaCog, FaSignOutAlt, FaBars, FaTimes, FaUserTie, FaStar, FaImage, FaClock
@@ -25,7 +25,7 @@ export default function AdminLayout() {
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [salon, setSalon] = useState(getSalonSettings());
-  const nicheConfig = getNicheConfig(salon?.niche || 'salao');
+  const nicheConfig = getNicheConfig(salon?.niche || DEFAULT_NICHE);
 
   useEffect(() => {
     const updateSalon = () => setSalon(getSalonSettings());
@@ -106,7 +106,7 @@ export default function AdminLayout() {
                     borderColor: `${nicheConfig.theme.primaryColor}30`,
                   }}
                 >
-                  {nicheConfig.name}
+                  {nicheConfig.name || nicheConfig.label}
                 </span>
               </div>
             </div>

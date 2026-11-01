@@ -101,10 +101,10 @@ export default function AdminGallery() {
   };
 
   return (
-    <div className="space-y-6 font-sans text-[#4A323D]">
+    <div className="space-y-6 font-sans text-slate-800">
       <div>
-        <h1 className="text-2xl font-bold text-[#4A323D] flex items-center gap-2">
-          <FaImage className="text-[#D47FA6]" /> Galeria de Trabalhos
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <FaImage style={{ color: 'var(--theme-primary)' }} /> Galeria de Trabalhos
         </h1>
         <p className="text-xs text-gray-500 mt-1">
           Adicione fotos dos seus melhores trabalhos para encantar seus clientes.
@@ -115,12 +115,12 @@ export default function AdminGallery() {
         {/* Formulário de Upload */}
         <div className="lg:col-span-1">
           <form onSubmit={handleUpload} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="text-base font-bold text-[#4A323D] border-b border-gray-100 pb-2">
+            <h2 className="text-base font-bold text-slate-900 border-b border-gray-100 pb-2">
               Adicionar Nova Foto
             </h2>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Selecione a Imagem *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Selecione a Imagem *</label>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -132,7 +132,7 @@ export default function AdminGallery() {
               <label
                 htmlFor="file-upload"
                 className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
-                  previewUrl ? 'border-[#D47FA6] bg-[#FDF2F7]' : 'border-gray-300 hover:border-[#D47FA6] bg-gray-50'
+                  previewUrl ? 'border-gray-400 bg-slate-50' : 'border-gray-300 hover:border-gray-400 bg-gray-50'
                 }`}
               >
                 {previewUrl ? (
@@ -148,24 +148,24 @@ export default function AdminGallery() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Título (Opcional)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Título (Opcional)</label>
               <input
                 type="text"
-                placeholder="Ex: Mechas Blond"
+                placeholder="Ex: Corte Degradê / Barba Alinhada"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#4A323D] mb-1">Descrição (Opcional)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Descrição (Opcional)</label>
               <textarea
                 placeholder="Pequena descrição sobre o procedimento..."
                 rows="3"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-[#D47FA6] resize-none"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:border-slate-400 resize-none"
               />
             </div>
 
@@ -175,8 +175,9 @@ export default function AdminGallery() {
               className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm shadow transition ${
                 uploading || !formData.file
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#D47FA6] to-[#E8A5C8] hover:shadow-md'
+                  : 'hover:shadow-md'
               }`}
+              style={!(uploading || !formData.file) ? { background: 'var(--theme-gradient)' } : {}}
             >
               {uploading ? <FaSpinner className="animate-spin" /> : <FaPlus />}
               <span>{uploading ? 'Enviando...' : 'Adicionar à Galeria'}</span>
@@ -187,16 +188,23 @@ export default function AdminGallery() {
         {/* Grid de Imagens */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 min-h-[400px]">
-            <h2 className="text-base font-bold text-[#4A323D] border-b border-gray-100 pb-2 mb-4 flex justify-between items-center">
+            <h2 className="text-base font-bold text-slate-900 border-b border-gray-100 pb-2 mb-4 flex justify-between items-center">
               <span>Suas Fotos</span>
-              <span className="text-xs bg-[#FDF2F7] text-[#D47FA6] px-2 py-1 rounded-full font-semibold">
+              <span 
+                className="text-xs px-2.5 py-1 rounded-full font-semibold border"
+                style={{
+                  backgroundColor: 'var(--theme-primary-light, #f8fafc)',
+                  color: 'var(--theme-primary, #0f172a)',
+                  borderColor: 'var(--theme-primary, #e2e8f0)33'
+                }}
+              >
                 {images.length} foto(s)
               </span>
             </h2>
 
             {loading ? (
               <div className="flex justify-center items-center h-48">
-                <FaSpinner className="animate-spin text-3xl text-[#D47FA6]" />
+                <FaSpinner className="animate-spin text-3xl" style={{ color: 'var(--theme-primary)' }} />
               </div>
             ) : images.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">

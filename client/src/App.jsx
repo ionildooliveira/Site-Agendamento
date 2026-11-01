@@ -38,8 +38,9 @@ export default function App() {
           duration: 4000,
           style: {
             background: '#FFFFFF',
-            color: '#6B4E5A',
-            border: '1px solid #F5D8E3',
+            color: '#1e293b',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
             fontFamily: "'Inter', sans-serif",
             fontSize: '14px',
             borderRadius: '12px',

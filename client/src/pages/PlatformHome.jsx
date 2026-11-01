@@ -38,7 +38,7 @@ export default function PlatformHome() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF8FA] font-sans text-[#4A323D] flex flex-col transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 font-sans text-gray-900 flex flex-col transition-colors duration-500">
       {/* Navbar */}
       <header className="bg-white/90 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -215,11 +215,11 @@ export default function PlatformHome() {
             </div>
 
             {/* Inner Mockup Content */}
-            <div className={`p-6 sm:p-10 ${currentNiche.theme.isDark ? 'bg-[#18181B] text-white' : 'bg-[#FFFBFD] text-gray-900'} transition-colors duration-500`}>
+            <div className={`p-6 sm:p-10 ${currentNiche.theme.isDark ? 'bg-[#18181B] text-white' : 'bg-white text-gray-900'} transition-colors duration-500`}>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left: Info */}
                 <div className="lg:col-span-7 space-y-4 text-left">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md">
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${currentNiche.theme.badgeClass}`}>
                     <span>{currentNiche.icon}</span>
                     <span>{currentNiche.badge}</span>
                   </div>
@@ -250,7 +250,7 @@ export default function PlatformHome() {
                             <span className="font-semibold block">{srv.name}</span>
                             <span className="text-[10px] text-gray-400">{srv.duration}</span>
                           </div>
-                          <span className="font-bold text-emerald-500">{srv.price}</span>
+                          <span className={`font-bold ${currentNiche.theme.accentPrice}`}>{srv.price}</span>
                         </div>
                       ))}
                     </div>

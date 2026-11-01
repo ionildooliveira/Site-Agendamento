@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { companiesAPI, setTenantId } from '../services/api';
 import { syncSalonSettings, getSalonSettings } from '../services/salonSettings';
-import { getNicheData } from '../constants/niches';
+import { getNicheData, DEFAULT_NICHE } from '../constants/niches';
 import toast from 'react-hot-toast';
 import BlockedCompany from '../pages/BlockedCompany';
 
@@ -17,7 +17,7 @@ export default function TenantLayout() {
     const nicheKey = settings?.niche || 
       (/barbearia|barber/i.test(companyName || settings?.name || '') ? 'barbearia' : 
        /estetica|spa|clinica/i.test(companyName || settings?.name || '') ? 'estetica' : 
-       /esmalte|unha|nail/i.test(companyName || settings?.name || '') ? 'esmalteria' : 'salao');
+       /esmalte|unha|nail/i.test(companyName || settings?.name || '') ? 'esmalteria' : DEFAULT_NICHE);
     const nicheData = getNicheData(nicheKey);
     const theme = nicheData?.theme;
     if (theme) {
