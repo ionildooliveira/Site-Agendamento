@@ -154,3 +154,23 @@ Em assistentes multi-etapas (`OnboardingWizard`, `BookingWizard`), evite o uso c
   </motion.div>
 )}
 ```
+
+---
+
+## 3. Correção de Instabilidade em `/admin/painel/configuracoes` (`blocked_dates` e Blindagem DOM Global)
+
+### Causa Raiz Identificada
+Ao acessar `/:companySlug/admin/painel/configuracoes` (ex.: `/ionildo/admin/painel/configuracoes`) após cadastrar uma **Data Bloqueada**:
+1. **Divergência de propriedade no payload de `blocked_dates`:** A tabela `blocked_dates` no Supabase retorna a coluna `date` (ex.: `2026-11-20`) e `professional_id`, enquanto a versão em produção na Vercel (`Settings.jsx`) invocava diretamente `block.blocked_date.split('-').reverse().join('/')`. Como `block.blocked_date` era `undefined`, ocorria `TypeError: Cannot read properties of undefined (reading 'split')`, acionando o `ErrorBoundary` (*"Ops! Ocorreu uma instabilidade na tela"*).
+2. **Mutações de DOM por Extensões do Navegador (Edge/Chrome):** Durante a troca de abas condicionais (`salon`, `hours`, `blocked`, `security`, `subscription`) e saída do estado `loading`, extensões (Tradutor, Gerenciador de Senhas, Copilot) podiam alterar nós DOM e disparar `NotFoundError: Failed to execute 'removeChild' on 'Node'`.
+
+### Solução Implementada (Defesa em Profundidade)
+1. **Normalização no Backend (`server/routes/settings.js`):**
+   - `GET /api/settings/blocked-dates` e `POST /api/settings/blocked-dates` fazem join com `professionals(name)` e retornam simultaneamente `date`, `blocked_date` e `professional_name`, garantindo retrocompatibilidade total.
+2. **Fallbacks Seguros e Chaves Estáveis em `client/src/pages/admin/Settings.jsx`:**
+   - Leitura resiliente da data: `const rawDate = String(block?.date || block?.blocked_date || ''); const cleanDate = rawDate.split('T')[0];`
+   - Resolução segura do nome do profissional via `block?.professional_name || professionals.find(p => String(p.id) === String(block?.professional_id))?.name`.
+   - Adição de `key` exclusiva nos containers de carregamento (`key="settings-loading"`, `key="settings-content"`) e em cada aba (`key="tab-salon"`, `key="tab-hours"`, `key="tab-blocked"`, `key="tab-security"`, `key="tab-subscription"`).
+3. **Blindagem Nativa de `Node.prototype` (`client/src/main.jsx`) e Auto-Recuperação (`ErrorBoundary.jsx`):**
+   - Interceptação segura de `Node.prototype.removeChild` e `Node.prototype.insertBefore` quando `child.parentNode !== this`.
+   - `ErrorBoundary.getDerivedStateFromError` ignora silenciosamente exceções transitórias `NotFoundError` (`removeChild`/`insertBefore`) sem travar a tela do usuário.

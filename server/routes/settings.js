@@ -110,14 +110,23 @@ router.get('/blocked-dates', setTenantId, async (req, res) => {
   const supabase = getDB();
   const { professionalId } = req.query;
   
-  let query = supabase.from('blocked_dates').select('*').eq('company_id', req.tenantId);
+  let query = supabase
+    .from('blocked_dates')
+    .select('*, professionals(name)')
+    .eq('company_id', req.tenantId);
   
   if (professionalId) {
     query = query.or(`professional_id.is.null,professional_id.eq.${professionalId}`);
   }
   
   const { data: blocked_dates } = await query.order('date', { ascending: true });
-  res.json(blocked_dates || []);
+  const normalized = (blocked_dates || []).map((b) => ({
+    ...b,
+    date: b.date || b.blocked_date || '',
+    blocked_date: b.date || b.blocked_date || '',
+    professional_name: b.professional_name || b.professionals?.name || null,
+  }));
+  res.json(normalized);
 });
 
 // POST /api/settings/blocked-dates (admin)
@@ -133,9 +142,17 @@ router.post('/blocked-dates', authenticateAdmin, setTenantId, async (req, res) =
       professional_id: professionalId || null,
       company_id: req.tenantId
     })
-    .select().single();
+    .select('*, professionals(name)')
+    .single();
     
-  res.status(201).json(result);
+  if (!result) return res.status(201).json({});
+
+  res.status(201).json({
+    ...result,
+    date: result.date || date,
+    blocked_date: result.date || date,
+    professional_name: result.professionals?.name || null,
+  });
 });
 
 // DELETE /api/settings/blocked-dates/:id (admin)

@@ -7,6 +7,15 @@ export default class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
+    // Auto-ignorar falhas transitórias de reconciliação de DOM causadas por extensões do navegador
+    const msg = String(error?.message || '');
+    if (
+      error?.name === 'NotFoundError' ||
+      msg.includes('removeChild') ||
+      msg.includes('insertBefore')
+    ) {
+      return { hasError: false, error: null };
+    }
     return { hasError: true, error };
   }
 

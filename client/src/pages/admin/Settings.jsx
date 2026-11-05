@@ -3,7 +3,7 @@ import { settingsAPI, professionalsAPI, authAPI, paymentsAPI } from '../../servi
 import { getSalonSettings, saveSalonSettings, syncSalonSettings, generateWorkingHoursText } from '../../services/salonSettings';
 import { getNicheData } from '../../constants/niches';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   FaClock, FaCalendarMinus, FaTrash, FaSave, FaPlusCircle,
   FaPowerOff, FaStore, FaWhatsapp, FaImage, FaLock,
@@ -13,6 +13,7 @@ import {
 
 export default function AdminSettings() {
   const navigate = useNavigate();
+  const { companySlug } = useParams();
   const [activeTab, setActiveTab] = useState('salon');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -62,10 +63,10 @@ export default function AdminSettings() {
         professionalsAPI.getAll('all'),
         syncSalonSettings()
       ]);
-      setWorkingHours(sets.working_hours || {});
-      setSlotInterval(sets.slot_interval || 30);
-      setBlockedDates(blocks || []);
-      setProfessionals(pros || []);
+      setWorkingHours(sets?.working_hours || {});
+      setSlotInterval(sets?.slot_interval || 30);
+      setBlockedDates(Array.isArray(blocks) ? blocks : []);
+      setProfessionals(Array.isArray(pros) ? pros : []);
       if (syncedSalon) {
         setSalonData(syncedSalon);
       }
@@ -86,10 +87,10 @@ export default function AdminSettings() {
           professionalsAPI.getAll('all'),
           syncSalonSettings()
         ]);
-        setWorkingHours(sets.working_hours || {});
-        setSlotInterval(sets.slot_interval || 30);
-        setBlockedDates(blocks || []);
-        setProfessionals(pros || []);
+        setWorkingHours(sets?.working_hours || {});
+        setSlotInterval(sets?.slot_interval || 30);
+        setBlockedDates(Array.isArray(blocks) ? blocks : []);
+        setProfessionals(Array.isArray(pros) ? pros : []);
         if (syncedSalon) {
           setSalonData(syncedSalon);
         }
@@ -290,9 +291,15 @@ export default function AdminSettings() {
       });
       toast.success('Credenciais atualizadas com sucesso! Faça login novamente.');
       // Clear session and redirect to login
-      localStorage.removeItem('studio_beauty_token');
-      localStorage.removeItem('studio_beauty_admin');
-      navigate('/login');
+      if (companySlug) {
+        localStorage.removeItem(`studio_beauty_token_${companySlug}`);
+        localStorage.removeItem(`studio_beauty_admin_${companySlug}`);
+        navigate(`/${companySlug}/admin`);
+      } else {
+        localStorage.removeItem('studio_beauty_token');
+        localStorage.removeItem('studio_beauty_admin');
+        navigate('/');
+      }
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.error || 'Erro ao atualizar credenciais.');
@@ -410,14 +417,14 @@ export default function AdminSettings() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
+        <div key="settings-loading" className="flex justify-center items-center h-64">
           <FaClock className="animate-spin text-4xl" style={{ color: 'var(--theme-primary)' }} />
         </div>
       ) : (
-        <>
+        <div key="settings-content">
           {/* Tab 1: Salão & WhatsApp */}
           {activeTab === 'salon' && (
-        <form onSubmit={handleSaveSalonIdentity} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5 max-w-3xl">
+        <form key="tab-salon" onSubmit={handleSaveSalonIdentity} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5 max-w-3xl">
           <div className="border-b border-gray-100 pb-3">
             <h2 className="text-base font-bold text-slate-900">Identidade e WhatsApp de Atendimento</h2>
             <p className="text-xs text-gray-500">
@@ -619,7 +626,7 @@ export default function AdminSettings() {
 
       {/* Tab 2: Horários de Funcionamento */}
       {activeTab === 'hours' && (
-        <form onSubmit={handleSaveWorkingHours} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
+        <form key="tab-hours" onSubmit={handleSaveWorkingHours} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
           <div className="border-b border-gray-100 pb-3">
             <h2 className="text-base font-bold text-slate-900">Grade Semanal de Funcionamento</h2>
             <p className="text-xs text-gray-500">
@@ -708,7 +715,7 @@ export default function AdminSettings() {
 
       {/* Tab 3: Datas Bloqueadas */}
       {activeTab === 'blocked' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
+        <div key="tab-blocked" className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
           {/* Add form */}
           <form onSubmit={handleAddBlockedDate} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4 h-fit">
             <h3 className="text-base font-bold text-slate-900 border-b border-gray-100 pb-3 flex items-center gap-2">
@@ -773,28 +780,37 @@ export default function AdminSettings() {
               <p className="text-xs text-gray-400 text-center py-6">Nenhuma data bloqueada cadastrada.</p>
             ) : (
               <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
-                {blockedDates.map((block) => (
-                  <div key={block.id} className="p-3.5 rounded-xl border border-gray-200 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-sm text-slate-900 block">
-                        {block.blocked_date.split('-').reverse().join('/')}
-                      </span>
-                      <span className="text-gray-500">{block.reason || 'Bloqueio administrativo'}</span>
-                      <span className="block text-[11px] font-medium mt-0.5" style={{ color: 'var(--theme-primary)' }}>
-                        {block.professional_name ? `Especialista: ${block.professional_name}` : 'Estabelecimento Inteiro'}
-                      </span>
-                    </div>
+                {blockedDates.map((block) => {
+                  const rawDate = String(block?.date || block?.blocked_date || '');
+                  const cleanDate = rawDate.split('T')[0];
+                  const formattedDate = cleanDate ? cleanDate.split('-').reverse().join('/') : 'Data inválida';
+                  const proName =
+                    block?.professional_name ||
+                    professionals.find((p) => String(p.id) === String(block?.professional_id))?.name;
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteBlockedDate(block.id)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-                      title="Liberar data"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                ))}
+                  return (
+                    <div key={block.id || rawDate} className="p-3.5 rounded-xl border border-gray-200 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-sm text-slate-900 block">
+                          {formattedDate}
+                        </span>
+                        <span className="text-gray-500">{block?.reason || 'Bloqueio administrativo'}</span>
+                        <span className="block text-[11px] font-medium mt-0.5" style={{ color: 'var(--theme-primary)' }}>
+                          {proName ? `Especialista: ${proName}` : 'Estabelecimento Inteiro'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBlockedDate(block.id)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                        title="Liberar data"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -803,7 +819,7 @@ export default function AdminSettings() {
 
       {/* Tab 4: Segurança / Acesso */}
       {activeTab === 'security' && (
-        <form onSubmit={handleUpdateCredentials} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 max-w-2xl">
+        <form key="tab-security" onSubmit={handleUpdateCredentials} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 max-w-2xl">
           <div className="border-b border-gray-100 pb-3">
             <h2 className="text-base font-bold text-slate-900">Configurações de Acesso</h2>
             <p className="text-xs text-gray-500">
@@ -874,7 +890,7 @@ export default function AdminSettings() {
 
       {/* Tab 5: Assinatura & Plano (Mercado Pago) */}
       {activeTab === 'subscription' && (
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
+        <div key="tab-subscription" className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200 space-y-6 max-w-3xl">
           <div className="border-b border-gray-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="text-base font-bold text-slate-900">Minha Assinatura & Plano</h2>
@@ -1066,7 +1082,7 @@ export default function AdminSettings() {
           )}
         </div>
       )}
-        </>
+        </div>
       )}
     </div>
   );
