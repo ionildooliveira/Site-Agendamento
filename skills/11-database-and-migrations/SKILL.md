@@ -1,6 +1,6 @@
 ---
 name: database-and-migrations
-description: Especificação técnica do banco de dados PostgreSQL no Supabase, scripts DDL, migrações 01 a 06, integridade com ON DELETE CASCADE e estruturas JSONB.
+description: Especificação técnica do banco de dados PostgreSQL no Supabase, scripts DDL, migrações 01 a 07, integridade com ON DELETE CASCADE e estruturas JSONB.
 ---
 
 # Database and Migrations Skill
@@ -169,3 +169,24 @@ CREATE TABLE subscriptions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
+
+---
+
+## Atualização (2026-11-05): Tabela `blocked_dates`, Erro Postgres 42P17 e Compatibilidade
+
+### 1. Divergência de Nomenclatura (`date` vs `blocked_date`)
+- No schema DDL original (`supabase_schema.sql`), a coluna foi criada como `date DATE NOT NULL`.
+- No frontend React e em versões legadas de rotas, certas telas esperavam `blocked_date`.
+- Se o backend retornar apenas `date`, o frontend sem fallback tenta acessar `block.blocked_date.split('-')`, disparando `TypeError: Cannot read properties of undefined (reading 'split')`.
+
+### 2. Erro PostgreSQL 42P17 (`generation expression is not immutable`)
+Ao tentar criar uma coluna gerada com `GENERATED ALWAYS AS (date::text) STORED`, o PostgreSQL rejeita a instrução com o erro:
+```sql
+ERROR: 42P17: generation expression is not immutable
+```
+**Motivo:** A conversão de `DATE` para `TEXT` no PostgreSQL é classificada como `STABLE` e não `IMMUTABLE`, pois depende do parâmetro de sessão `DateStyle` (ex.: ISO, Postgres, German). Colunas geradas exigem estritamente funções puramente `IMMUTABLE`.
+
+### 3. Soluções Padrão
+1. **Normalização no Backend (Recomendada):** Na rota Express (`server/routes/settings.js`), normalizar os objetos mapeando `date: b.date || b.blocked_date` e `blocked_date: b.date || b.blocked_date`.
+2. **Defesa no Frontend:** Sempre usar leitura segura: `const rawDate = String(block?.date || block?.blocked_date || '');`
+3. **Trigger no Banco (quando necessário no DDL):** Se for necessário manter ambas as colunas fisicamente no PostgreSQL, utilizar `TRIGGER BEFORE INSERT OR UPDATE` em vez de `GENERATED ALWAYS AS`.
