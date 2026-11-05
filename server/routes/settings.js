@@ -122,8 +122,8 @@ router.get('/blocked-dates', setTenantId, async (req, res) => {
   const { data: blocked_dates } = await query.order('date', { ascending: true });
   const normalized = (blocked_dates || []).map((b) => ({
     ...b,
-    date: b.date || b.blocked_date || '',
-    blocked_date: b.date || b.blocked_date || '',
+    date: String(b.date || b.blocked_date || ''),
+    blocked_date: String(b.date || b.blocked_date || ''),
     professional_name: b.professional_name || b.professionals?.name || null,
   }));
   res.json(normalized);

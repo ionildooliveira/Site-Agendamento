@@ -21,6 +21,14 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary capturou um erro:', error, errorInfo);
+    const msg = String(error?.message || '');
+    if (
+      error?.name === 'NotFoundError' ||
+      msg.includes('removeChild') ||
+      msg.includes('insertBefore')
+    ) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 
   handleReload = () => {
