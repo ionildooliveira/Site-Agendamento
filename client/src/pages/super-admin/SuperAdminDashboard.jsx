@@ -6,6 +6,7 @@ import {
   FaEdit, FaBan, FaTrash, FaCheck, FaExclamationTriangle 
 } from 'react-icons/fa';
 import { superAdminAPI } from '../../services/api';
+import { NICHES } from '../../constants/niches';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function SuperAdminDashboard() {
     companySlug: '',
     adminEmail: '',
     adminPassword: '',
+    niche: 'barbearia',
   });
 
   // List Companies State
@@ -89,6 +91,7 @@ export default function SuperAdminDashboard() {
           companySlug: '',
           adminEmail: '',
           adminPassword: '',
+          niche: 'barbearia',
         });
       }
     } catch (err) {
@@ -223,6 +226,36 @@ export default function SuperAdminDashboard() {
                 <input type="password" name="fake_password_autofill" tabIndex="-1" aria-hidden="true" />
               </div>
 
+              {/* Seletor de Nicho do Estabelecimento */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Segmento / Nicho do Estabelecimento
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {Object.values(NICHES).map((n) => {
+                    const isSelected = formData.niche === n.id;
+                    return (
+                      <button
+                        key={n.id}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, niche: n.id }))}
+                        className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#4A323D] text-white border-[#4A323D] shadow-md scale-[1.02]'
+                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                        }`}
+                      >
+                        <span className="text-lg">{n.icon}</span>
+                        <span>{n.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Aplica automaticamente o tema de cores, imagens e cadastra os serviços e profissional iniciais adequados ao nicho.
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Nome do Salão/Empresa</label>
@@ -354,7 +387,17 @@ export default function SuperAdminDashboard() {
                   <tbody>
                     {companies.map(company => (
                       <tr key={company.id} className="border-b border-gray-100 hover:bg-gray-50/50">
-                        <td className="p-4 font-medium text-gray-900">{company.name}</td>
+                        <td className="p-4 font-medium text-gray-900">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span>{company.name}</span>
+                            {company.niche && NICHES[company.niche] && (
+                              <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 font-semibold inline-flex items-center gap-1 border border-gray-200">
+                                <span>{NICHES[company.niche].icon}</span>
+                                <span>{NICHES[company.niche].label}</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="p-4 font-mono text-xs text-gray-500">/{company.slug}</td>
                         <td className="p-4">
                           {company.is_active ? (

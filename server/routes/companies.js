@@ -19,12 +19,14 @@ router.post('/verify-super-admin', authenticateSuperAdmin, (req, res) => {
 
 // Create a new company (Protected by Super Admin Password)
 router.post('/create', authenticateSuperAdmin, async (req, res) => {
-  const { companyName, companySlug, adminEmail, adminPassword } = req.body;
+  const { companyName, companySlug, adminEmail, adminPassword, niche } = req.body;
   const supabase = getDB();
 
   if (!companyName || !companySlug || !adminEmail || !adminPassword) {
     return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
   }
+
+  const nicheKey = niche || 'barbearia';
 
   try {
     // 1. Insert company
@@ -61,7 +63,68 @@ router.post('/create', authenticateSuperAdmin, async (req, res) => {
       // Rollback is manual here if needed, but for simplicity we continue
     }
 
-    // 3. Default settings
+    // 3. Configurações e template de acordo com o Nicho
+    let proRole = 'Profissional Master';
+    let proSpecialties = ['Atendimento Geral'];
+    let starterServices = [];
+    let badge = 'Salão de Beleza & Estética Premium';
+    let slogan = 'Elegância, cuidado & sofisticação para sua beleza';
+    let description = 'Um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta com profissionais altamente especializados.';
+    let heroImage = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80';
+
+    if (nicheKey === 'barbearia') {
+      badge = 'Barbearia & Estética Masculina';
+      slogan = 'Cortes modernos, barba alinhada e estilo de respeito';
+      description = 'Espaço exclusivo dedicado ao cuidado masculino. Cortes clássicos e modernos, barboterapia tradicional com toalha quente e profissionais experientes.';
+      heroImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1920&q=80';
+      proRole = 'Barbeiro Master';
+      proSpecialties = ['Corte Fade', 'Barboterapia', 'Degradê'];
+      starterServices = [
+        { name: 'Corte Fade / Degradê', price: 45.0, duration_minutes: 35, category: 'Cabelo' },
+        { name: 'Barboterapia com Toalha Quente', price: 35.0, duration_minutes: 30, category: 'Barba' },
+        { name: 'Combo Cabelo + Barba', price: 75.0, duration_minutes: 55, category: 'Combos' },
+      ];
+    } else if (nicheKey === 'esmalteria') {
+      badge = 'Esmalteria & Nail Design';
+      slogan = 'Alongamento em fibra, nail art exclusiva e autocuidado para suas unhas';
+      description = 'Especialistas em embelezamento e estética de unhas. Técnicas avançadas de extensão, esmaltação duradoura e ambiente aconchegante.';
+      heroImage = 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1920&q=80';
+      proRole = 'Nail Designer Master';
+      proSpecialties = ['Alongamento em Fibra', 'Nail Art', 'Esmaltação em Gel'];
+      starterServices = [
+        { name: 'Alongamento em Fibra de Vidro', price: 160.0, duration_minutes: 120, category: 'Extensão' },
+        { name: 'Manutenção de Alongamento', price: 95.0, duration_minutes: 90, category: 'Manutenção' },
+        { name: 'Esmaltação em Gel', price: 65.0, duration_minutes: 50, category: 'Unhas' },
+      ];
+    } else if (nicheKey === 'estetica') {
+      badge = 'Clínica de Estética & Bem-estar';
+      slogan = 'Tratamentos faciais, corporais e terapias de puro relaxamento';
+      description = 'Centro especializado em saúde estética, bem-estar e rejuvenescimento. Protocolos personalizados com tecnologia avançada e biossegurança.';
+      heroImage = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=80';
+      proRole = 'Esteticista & Terapeuta';
+      proSpecialties = ['Limpeza de Pele', 'Massagem Relaxante', 'Drenagem'];
+      starterServices = [
+        { name: 'Limpeza de Pele Profunda', price: 140.0, duration_minutes: 75, category: 'Facial' },
+        { name: 'Massagem Relaxante', price: 130.0, duration_minutes: 60, category: 'Corporal' },
+        { name: 'Drenagem Linfática', price: 110.0, duration_minutes: 50, category: 'Corporal' },
+      ];
+    } else {
+      badge = 'Salão de Beleza & Cabelos';
+      slogan = 'Elegância, cuidado & sofisticação para sua beleza';
+      description = 'Um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta para cabelos, mechas e estética com profissionais altamente especializados.';
+      heroImage = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80';
+      proRole = 'Cabeleireira & Visagista';
+      proSpecialties = ['Mechas', 'Cortes', 'Tratamentos'];
+      starterServices = [
+        { name: 'Corte Feminino & Escova', price: 90.0, duration_minutes: 60, category: 'Cabelo' },
+        { name: 'Mechas & Iluminação', price: 280.0, duration_minutes: 180, category: 'Coloração' },
+        { name: 'Cronograma Capilar', price: 130.0, duration_minutes: 75, category: 'Tratamentos' },
+      ];
+    }
+
+    const nextBillingDate = new Date();
+    nextBillingDate.setDate(nextBillingDate.getDate() + 365); // 1 ano de cortesia do Super Admin
+
     const newSettingsId = Date.now();
     const { error: settingsError } = await supabase
       .from('settings')
@@ -72,14 +135,26 @@ router.post('/create', authenticateSuperAdmin, async (req, res) => {
           slot_interval: 30,
           salon_data: {
             name: companyName,
-            slogan: 'Elegância, cuidado & sofisticação para sua beleza',
-            description: 'Um espaço premium dedicado ao autocuidado e bem-estar. Oferecemos tratamentos de ponta com profissionais altamente especializados.',
+            niche: nicheKey,
+            badge,
+            slogan,
+            description,
             address: 'Av. Principal, 1000 - Centro',
             cityState: 'São Paulo - SP',
             whatsapp: '',
             email: adminEmail,
-            workingHoursText: 'Seg a Sexta: 09h às 19h | Sáb: 09h às 17h',
-            heroImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80',
+            workingHoursText: 'Segunda a Sexta: 09h às 19h | Sábado: 09h às 17h',
+            heroImage,
+            subscription: {
+              status: 'active',
+              plan: 'Plano Profissional (Liberado pelo Super Admin)',
+              amount: 69.90,
+              billing_cycle: 'monthly',
+              auto_recurring: false,
+              payment_method: 'admin_manual',
+              payment_date: new Date().toISOString(),
+              next_billing_date: nextBillingDate.toISOString(),
+            },
           },
           working_hours: {
             "0": null,
@@ -95,6 +170,49 @@ router.post('/create', authenticateSuperAdmin, async (req, res) => {
 
     if (settingsError) {
       console.error('Erro ao criar configurações padrão:', settingsError.message);
+    }
+
+    // 4. Inserir profissional inicial e serviços pré-cadastrados do nicho
+    try {
+      await supabase.from('professionals').insert([
+        {
+          name: `Admin - ${companyName}`,
+          role: proRole,
+          specialties: proSpecialties,
+          company_id: company.id,
+          active: true,
+        },
+      ]);
+
+      const servicesPayload = starterServices.map(s => ({
+        ...s,
+        company_id: company.id,
+        active: true,
+      }));
+      await supabase.from('services').insert(servicesPayload);
+    } catch (seedErr) {
+      console.warn('Erro ao criar serviços/profissional iniciais:', seedErr.message);
+    }
+
+    // 5. Inserir na tabela subscriptions (se existir)
+    try {
+      await supabase.from('subscriptions').insert([
+        {
+          company_id: company.id,
+          user_email: adminEmail.toLowerCase().trim(),
+          user_name: `Admin - ${companyName}`,
+          plan_name: 'Plano Profissional (Super Admin)',
+          amount: 69.90,
+          billing_cycle: 'monthly',
+          payment_method: 'admin_manual',
+          payment_status: 'approved',
+          auto_recurring: false,
+          current_period_start: new Date().toISOString(),
+          current_period_end: nextBillingDate.toISOString(),
+        },
+      ]);
+    } catch (subErr) {
+      // Ignorar se tabela não existir
     }
 
     res.json({ success: true, message: 'Empresa criada com sucesso!', company });
@@ -208,10 +326,12 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
       .select('company_id, salon_data');
 
     const settingsMap = new Map();
-    (allSettings || []).forEach(s => settingsMap.set(s.company_id, s.salon_data?.subscription));
+    (allSettings || []).forEach(s => settingsMap.set(s.company_id, s.salon_data));
 
     const enrichedCompanies = (companies || []).map(comp => {
-      const sub = settingsMap.get(comp.id);
+      const salonData = settingsMap.get(comp.id);
+      const sub = salonData?.subscription;
+      const niche = salonData?.niche || 'salao';
       let subStatus = 'active';
       let isExpired = false;
 
@@ -231,6 +351,7 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
 
       return {
         ...comp,
+        niche,
         subscription: sub || null,
         subStatus,
         isExpired
